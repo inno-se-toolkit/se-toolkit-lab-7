@@ -41,7 +41,7 @@ The base URL of the [OpenAI-compatible API](./llm.md#openai-compatible-api) endp
   
   `<lms-api-url>/utils/qwen-code-api/v1`.
 
-  See [`<lms-api-url>`](./lms-api.md#lms-api-url-placeholder).
+  See [`<lms-api-url>`](./lms-api.md#lms-api-base-url-placeholder).
 
 - For the [`OpenRouter` API](./llm.md#openrouter-api):
   

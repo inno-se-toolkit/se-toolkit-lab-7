@@ -43,7 +43,7 @@ Docs:
 
 A repository (or "repo") is a storage location for files that are version-controlled using [`Git`](./git.md#what-is-git).
 
-Example: [`GitHub` repository](./github.md#repository)
+Example: [`GitHub` repository](./github.md#github-repository)
 
 ## Remote
 

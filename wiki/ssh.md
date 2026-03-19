@@ -82,11 +82,9 @@ You do not need to configure it — your [VM](./vm.md#your-vm) already has it ru
 
 When `ssh-agent` holds your key, you do not need to type a passphrase every time you connect.
 
-See [Start the `ssh-agent`](./vm-access.md#start-the-ssh-agent) for setup instructions.
-
 ## `SSH` shell
 
-An `SSH` shell is the interactive [shell](./shell.md#what-is-a-shell) session you get after [connecting to the VM](./vm-access.md#connect-to-the-vm) over `SSH`.
+An `SSH` shell is the interactive [shell](./shell.md#what-is-a-shell) session you get after [connecting to the VM](./vm-access.md#connect-to-the-vm-as-the-user-user-local) over `SSH`.
 
 Commands you run in it execute on the remote machine, not on your local computer.
 

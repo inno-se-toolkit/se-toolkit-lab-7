@@ -76,7 +76,7 @@
 ### 1.2. Start creating a VM
 
 > [!NOTE]
-> Skip this step if you can [connect to your VM](../../wiki/vm.md#connect-to-the-vm).
+> Skip this step if you can [connect to your VM](../../wiki/vm-access.md#connect-to-the-vm-as-the-user-user-local).
 
 [Create a subscription](../../wiki/vm.md#create-a-subscription) to be able to create a VM.
 

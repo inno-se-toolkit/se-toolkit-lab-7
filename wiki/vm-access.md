@@ -56,7 +56,7 @@ Complete these steps:
 <!-- no toc -->
 1. [Set up `SSH` (LOCAL)](#set-up-ssh-local).
 2. [Create a VM](./vm.md#create-a-vm).
-3. [Check that the VM is accessible (LOCAL)](./vm.md#check-the-vm-is-accessible).
+3. [Check that the VM is accessible (LOCAL)](./vm-access.md#check-the-vm-is-accessible-local).
 4. [Set up the `SSH` access to the VM as the user `root`](#set-up-the-ssh-access-to-the-vm-as-the-user-root).
 5. [Set up the `SSH` access to the VM as the user `<user>`](#set-up-the-ssh-access-to-the-vm-as-the-user-user).
 6. [Restrict the `SSH` connection](#restrict-the-ssh-connection).

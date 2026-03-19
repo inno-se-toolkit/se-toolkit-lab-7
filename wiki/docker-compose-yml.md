@@ -83,7 +83,7 @@ Configuration in [`docker-compose.yml`](../docker-compose.yml):
 - **`ports`** — maps [`LMS_API_HOST_ADDRESS`](./dotenv-docker-secret.md#lms_api_host_address):[`LMS_API_HOST_PORT`](./dotenv-docker-secret.md#lms_api_host_port) on the [host](./computer-networks.md#host) to `CADDY_CONTAINER_PORT` inside the [container](./docker.md#container).
 - **`volumes`** — mounts [`caddy/Caddyfile`](../caddy/Caddyfile) as the [`Caddy` configuration](./caddy.md#caddyfile).
 
-See [`Caddy` in this project](./caddy.md#caddy-in-this-project) for how the `Caddyfile` routes requests.
+See [`Caddy` duties](./lms-api.md#caddy-duties) for how the `Caddyfile` routes requests.
 
 ## Volumes
 

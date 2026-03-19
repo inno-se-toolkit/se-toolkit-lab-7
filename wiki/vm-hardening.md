@@ -85,7 +85,7 @@ Complete these steps:
    sudo ufw allow <lms-api-host-port>
    ```
 
-   Replace the placeholder [`<lms-api-host-port>`](./lms-api.md#lms-api-port-placeholder).
+   Replace the placeholder [`<lms-api-host-port>`](./lms-api.md#lms-api-host-port-placeholder).
 
    The output should look like this:
 

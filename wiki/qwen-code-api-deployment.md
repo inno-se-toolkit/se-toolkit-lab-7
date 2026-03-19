@@ -18,7 +18,7 @@ This page describes how to deploy the [`Qwen Code` API](./qwen-code-api.md#what-
 
 Complete these steps:
 
-1. [Set up the `Qwen Code` CLI (REMOTE)](./qwen-code-api.md#set-up-the-qwen-code-cli-remote).
+1. [Set up the `Qwen Code` CLI (REMOTE)](./qwen-code.md#set-up-the-qwen-code-cli-remote).
 2. [Clone the `Qwen Code` API repository (REMOTE)](#clone-the-qwen-code-api-repository-remote).
 3. [Pull the latest changes from the `Qwen Code` API repository (REMOTE)](#pull-the-latest-changes-from-the-qwen-code-api-repository-remote).
 4. [Enter the `Qwen Code` API repository directory (REMOTE)](#enter-the-qwen-code-api-repository-directory-remote).
@@ -28,7 +28,7 @@ Complete these steps:
 
 ### Clone the `Qwen Code` API repository (REMOTE)
 
-1. [Clone the repository](./git-vscode.md#clone-the-repo-using-the-vs-code-terminal) with the URL `https://github.com/inno-se-toolkit/qwen-code-api` to `~/qwen-code-api`.
+1. [Clone the repository](./git-vscode.md#clone-the-repository-using-the-vs-code-terminal) with the URL `https://github.com/inno-se-toolkit/qwen-code-api` to `~/qwen-code-api`.
 
 ### Pull the latest changes from the `Qwen Code` API repository (REMOTE)
 
@@ -86,4 +86,4 @@ Complete these steps:
 
    > <h3>Troubleshooting</h3>
    >
-   > [`Bind for <host>:<port> failed: port is already allocated`](./docker.md#bind-for-hostport-failed-port-is-already-allocated)
+   > [**`Port conflict (`port is already allocated`)`**](./docker.md#port-conflict-port-is-already-allocated)

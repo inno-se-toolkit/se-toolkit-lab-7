@@ -23,6 +23,6 @@ Default values: [`frontend/.env.example`](../frontend/.env.example)
 
 ## `VITE_API_TARGET`
 
-The [LMS API URL](./lms-api.md#lms-api-url) that the `Vite` dev server [proxies](./web-infrastructure.md#reverse-proxy) requests to.
+The [LMS API base URL](./lms-api.md#lms-api-base-url) that the `Vite` dev server [proxies](./web-infrastructure.md#reverse-proxy) requests to.
 
 Default: `http://127.0.0.1:42002`

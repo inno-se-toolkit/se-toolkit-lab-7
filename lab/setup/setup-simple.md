@@ -79,9 +79,9 @@ We refer to your fork as `fork` and to the original repo as `upstream`.
 
    > <h3>Troubleshooting</h3>
    >
-   > [**`git` asks for a password**](./github.md#git-asks-for-a-password)
+   > [**`git` asks for a password**](../../wiki/github.md#git-asks-for-a-password)
    >
-   > [**`fatal: destination path <directory-path> already exists and is not an empty directory.`**](./github.md#fatal-destination-path-directory-path-already-exists-and-is-not-an-empty-directory)
+   > [**`fatal: destination path <directory-path> already exists and is not an empty directory.`**](../../wiki/github.md#fatal-destination-path-directory-path-already-exists-and-is-not-an-empty-directory)
 
 2. [Open in `VS Code` the directory](../../wiki/vs-code.md#open-the-file-or-the-directory-using-code):
    `se-toolkit-lab-6`.
@@ -152,7 +152,7 @@ We refer to your fork as `fork` and to the original repo as `upstream`.
 
 1. [Deploy the `Qwen Code` API on your VM](../../wiki/qwen-code-api-deployment.md#deploy-the-qwen-code-api-remote).
 
-2. [Check that the `Qwen Code` API is accessible](../../wiki/qwen-code-api-deployment.md#check-that-the-qwen-code-api-is-accessible) on your local machine.
+2. [Check that the `Qwen Code` API is accessible](../../wiki/qwen-code-api.md#check-that-the-qwen-code-api-is-accessible) on your local machine.
 
 ### 1.8. Set up the agent environment
 

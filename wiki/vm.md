@@ -83,7 +83,7 @@ Complete these steps:
 5. [Go to the VM page](#go-to-the-vm-page).
 6. [Check the VM is running](#check-the-vm-is-running).
 7. [Get the IP address of the VM](#get-the-ip-address-of-the-vm).
-8. [Check the VM is accessible](#check-the-vm-is-accessible).
+8. [Check the VM is accessible (LOCAL)](./vm-access.md#check-the-vm-is-accessible-local).
 
 ### Create a subscription
 
@@ -135,7 +135,7 @@ Complete these steps:
 13. Click `Not Connected`.
 14. In the drop-down list, click `StudentsCourses01;10.93.24.0/22`.
 15. Click checkmark to complete the setup.
-16. In approximately 20 minutes, [check the VM is accessible](#check-the-vm-is-accessible).
+16. In approximately 20 minutes, [check the VM is accessible](./vm-access.md#check-the-vm-is-accessible-local).
 
 ### Go to the VM page
 

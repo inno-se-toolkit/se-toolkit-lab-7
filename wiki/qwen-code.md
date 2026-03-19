@@ -33,7 +33,7 @@
 See:
 
 - [Set up `Qwen Code` (LOCAL)](#set-up-qwen-code-local).
-- [Set up the `Qwen Code` CLI (REMOTE)](./qwen-code-api.md#set-up-the-qwen-code-cli-remote).
+- [Set up the `Qwen Code` CLI (REMOTE)](./qwen-code.md#set-up-the-qwen-code-cli-remote).
 - [Set up the `Qwen Code` API (REMOTE)](./qwen-code-api.md).
 
 ## `Qwen` API
@@ -131,7 +131,7 @@ Path: `~/.qwen/oauth_creds.json`.
 
 ## Set up the `Qwen Code` CLI (REMOTE)
 
-1. [Connect to the VM](./vm-access.md#connect-to-the-vm).
+1. [Connect to the VM](./vm-access.md#connect-to-the-vm-as-the-user-user-local).
 
 2. [Set up the `Qwen Code` CLI (REMOTE)](#set-up-the-qwen-code-cli).
 

@@ -109,7 +109,7 @@ The [`Caddyfile`](./caddy.md#caddyfile) at [`caddy/Caddyfile`](../caddy/Caddyfil
 
 ### Forward requests to `pgAdmin`
 
-`Caddy` routes to [`pgAdmin`](./pgadmin#what-is-pgadmin) these [API endpoints](./web-api.md#endpoint):
+`Caddy` routes to [`pgAdmin`](./pgadmin.md#what-is-pgadmin) these [API endpoints](./web-api.md#endpoint):
 
 - `/utils/pgadmin*`
 
