@@ -13,7 +13,7 @@
 
 Use this file when creating or updating lab content: README, narrative, and cross-cutting patterns.
 
-For setup file conventions (`lab/tasks/setup.md` and `lab/tasks/setup-simple.md`), see [setup.md](setup.md).
+For setup file conventions (`lab/setup/setup-full.md` and `lab/setup/setup-simple.md`), see [setup.md](setup.md).
 
 ---
 
@@ -73,10 +73,10 @@ In simple words, you should be able to say:
 
 ### Prerequisites
 
-1. Complete the [lab setup](./lab/tasks/setup-simple.md).
+1. Complete the [lab setup](./lab/setup/setup-simple.md).
 
 > [!NOTE]
-> If this is the first lab you are completing in this course, do the [full lab setup](./lab/tasks/setup.md) instead.
+> If this is the first lab you are completing in this course, do the [full lab setup](./lab/setup/setup-full.md) instead.
 
 ### Required
 

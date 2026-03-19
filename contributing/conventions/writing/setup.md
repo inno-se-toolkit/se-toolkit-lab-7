@@ -3,13 +3,13 @@
 <h2>Table of contents</h2>
 
 - [1. Overview](#1-overview)
-- [2. `lab/tasks/setup.md` — Full setup](#2-labtaskssetupmd--full-setup)
+- [2. `lab/setup/setup-full.md` — Full setup](#2-labsetupsetup-fullmd--full-setup)
   - [2.1. Key rules for `setup.md`](#21-key-rules-for-setupmd)
-- [3. `lab/tasks/setup-simple.md` — Lab-specific setup](#3-labtaskssetup-simplemd--lab-specific-setup)
+- [3. `lab/setup/setup-simple.md` — Lab-specific setup](#3-labsetupsetup-simplemd--lab-specific-setup)
   - [3.1. Key rules for `setup-simple.md`](#31-key-rules-for-setup-simplemd)
 - [4. Checklist](#4-checklist)
 
-Use this file when creating or updating lab setup files: `lab/tasks/setup.md` and `lab/tasks/setup-simple.md`.
+Use this file when creating or updating lab setup files: `lab/setup/setup-full.md` and `lab/setup/setup-simple.md`.
 
 ---
 
@@ -24,7 +24,7 @@ The README links to `setup-simple.md` by default, with a note directing first-ti
 
 ---
 
-## 2. `lab/tasks/setup.md` — Full setup
+## 2. `lab/setup/setup-full.md` — Full setup
 
 Structure:
 
@@ -81,7 +81,7 @@ These enhancements can make your life easier:
 
 ---
 
-## 3. `lab/tasks/setup-simple.md` — Lab-specific setup
+## 3. `lab/setup/setup-simple.md` — Lab-specific setup
 
 Structure:
 
