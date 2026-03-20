@@ -5,12 +5,14 @@ import argparse
 import sys
 import os
 import asyncio
+import ssl
 from pathlib import Path
 
-# Add parent directory to path for imports
+ssl._create_default_https_context = ssl._create_unverified_context
+
 sys.path.insert(0, str(Path(__file__).parent))
 
-from handlers import handle_start, handle_help, handle_health, handle_labs
+from handlers import handle_start, handle_help, handle_health, handle_labs, handle_scores
 from config import BOT_TOKEN
 
 
@@ -24,7 +26,6 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.test:
-        # Test mode - call handlers directly
         command = args.test.strip()
         response = ""
 
@@ -36,13 +37,16 @@ def main() -> None:
             response = handle_health()
         elif command == "/labs":
             response = handle_labs()
+        elif command.startswith("/scores"):
+            parts = command.split(maxsplit=1)
+            lab = parts[1] if len(parts) > 1 else ""
+            response = handle_scores(lab)
         else:
             response = "Command not recognized. Use /help for available commands."
 
         print(response)
         sys.exit(0)
 
-    # Telegram mode
     if not BOT_TOKEN:
         print("Error: BOT_TOKEN not set in .env.bot.secret")
         sys.exit(1)
@@ -72,6 +76,12 @@ def main() -> None:
     @dp.message(Command("labs"))
     async def cmd_labs(message: types.Message) -> None:
         await message.answer(handle_labs())
+
+    @dp.message(Command("scores"))
+    async def cmd_scores(message: types.Message) -> None:
+        lab = message.text.split(maxsplit=1)[1] if len(message.text.split()) > 1 else ""
+        response = handle_scores(lab)
+        await message.answer(response)
 
     @dp.message()
     async def echo(message: types.Message) -> None:
