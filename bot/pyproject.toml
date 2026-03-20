@@ -1,0 +1,23 @@
+[project]
+name = "lms-telegram-bot"
+version = "0.1.0"
+description = "Telegram bot client for the LMS backend"
+requires-python = "==3.14.2"
+dependencies = [
+  "httpx==0.28.1",
+  "pydantic==2.12.5",
+  "pydantic-settings==2.12.0",
+  "python-telegram-bot==22.5",
+]
+
+[dependency-groups]
+dev = [
+  "pytest==9.0.2",
+  "pytest-asyncio>=1.2.0",
+  "ruff==0.14.14",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]

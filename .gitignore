@@ -11,5 +11,6 @@ __pycache__/
 .direnv
 
 tmp
+.tmp-vm-proxy
 
 **/settings.local.json

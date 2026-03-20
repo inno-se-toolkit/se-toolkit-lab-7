@@ -91,3 +91,69 @@ By the end of this lab, you should be able to say:
 2. [Backend Integration](./lab/tasks/required/task-2.md) — P0: slash commands + real data
 3. [Intent-Based Natural Language Routing](./lab/tasks/required/task-3.md) — P1: LLM tool use
 4. [Containerize and Document](./lab/tasks/required/task-4.md) — P3: containerize + deploy
+
+## Telegram bot
+
+The repository now includes a `bot/` application that talks to the LMS backend.
+It supports both slash commands and natural-language questions:
+
+- `/start`, `/help`, `/health`, `/labs`, `/scores <lab>`
+- plain-language requests such as `what labs are available?`
+- LLM tool calling across all nine backend endpoints
+
+The bot architecture keeps handlers independent from Telegram, so the same logic
+works in CLI test mode and in real polling mode.
+
+## Bot configuration
+
+Create `.env.bot.secret` in the repository root from `.env.bot.example`.
+
+Required variables:
+
+- `BOT_TOKEN` for Telegram polling mode
+- `LMS_API_URL` and `LMS_API_KEY` for the LMS backend
+- `LLM_API_KEY`, `LLM_API_BASE_URL`, `LLM_API_MODEL` for natural-language routing
+
+`BOT_TOKEN` is optional in `--test` mode, but the backend and LLM variables are
+still needed for live integrations.
+
+## Run locally
+
+```bash
+cd bot
+uv sync
+uv run bot.py --test "/start"
+uv run bot.py --test "/health"
+uv run bot.py --test "what labs are available?"
+```
+
+To run the real Telegram bot:
+
+```bash
+cd bot
+uv run bot.py
+```
+
+## Deploy
+
+Prepare the root `.env.docker.secret` with the bot variables as well:
+
+- `BOT_TOKEN`
+- `BOT_LMS_API_URL=http://backend:8000`
+- `LLM_API_KEY`
+- `LLM_API_BASE_URL=http://host.docker.internal:42005/v1`
+- `LLM_API_MODEL`
+
+Then build and start the full stack:
+
+```bash
+docker compose --env-file .env.docker.secret up --build -d
+docker compose --env-file .env.docker.secret ps
+docker compose --env-file .env.docker.secret logs bot --tail 50
+```
+
+Verify:
+
+- `curl -sf http://localhost:42002/docs`
+- `docker compose --env-file .env.docker.secret ps bot`
+- send `/start`, `/health`, and a plain-language question in Telegram
