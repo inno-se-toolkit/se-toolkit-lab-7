@@ -3,6 +3,7 @@ from .help import handle_help
 from .health import handle_health
 from .labs import handle_labs
 from .scores import handle_scores
+from .intent import handle_intent
 
 __all__ = [
     "handle_start",
@@ -10,4 +11,5 @@ __all__ = [
     "handle_health",
     "handle_labs",
     "handle_scores",
+    "handle_intent",
 ]
