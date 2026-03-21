@@ -100,7 +100,7 @@ A web server and reverse proxy configured via a `Caddyfile`.
 
 ### [Coding agents](./wiki/coding-agents.md)
 
-Using LLMs to help complete development tasks inside `VS Code`.
+Using the lab docs and tools to complete development tasks inside `VS Code`.
 
 ### [Networks](./wiki/computer-networks.md)
 

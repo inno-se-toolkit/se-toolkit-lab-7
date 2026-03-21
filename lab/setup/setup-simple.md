@@ -14,9 +14,8 @@
   - [1.6. Verify the local deployment](#16-verify-the-local-deployment)
   - [1.7. Deploy to your VM](#17-deploy-to-your-vm)
   - [1.8. Set up SSH for the autochecker](#18-set-up-ssh-for-the-autochecker)
-  - [1.9. Set up LLM access (Qwen Code API)](#19-set-up-llm-access-qwen-code-api)
-  - [1.10. Get a Telegram bot token](#110-get-a-telegram-bot-token)
-  - [1.11. Coding agent](#111-coding-agent)
+  - [1.9. Get a Telegram bot token](#19-get-a-telegram-bot-token)
+  - [1.10. Configure the bot environment](#110-configure-the-bot-environment)
 
 ## 1. Required steps
 
@@ -30,9 +29,6 @@
 
 > [!TIP]
 > In the instructions below, values you need to replace are marked like this: **`YOUR_VALUE`**. Replace the entire placeholder (including the `<` and `>` if present) with your actual value.
-
-> [!TIP]
-> First ask your [coding agent](#111-coding-agent), then ask the TA.
 
 ### 1.1. Set up your fork
 
@@ -98,7 +94,7 @@ We refer to your fork as `fork` and to the original repo as `upstream`.
    > [!IMPORTANT]
    > The credentials must match your autochecker bot registration.
 
-6. Set `LMS_API_KEY` — this is the **backend API key** that protects your LMS endpoints (used for `Authorization: Bearer` in Swagger and the frontend). It is **not** the LLM key — that comes later.
+6. Set `LMS_API_KEY` — this is the **backend API key** that protects your LMS endpoints (used for `Authorization: Bearer` in Swagger and the frontend).
 
    ```text
    LMS_API_KEY=set-it-to-something-and-remember-it
@@ -369,44 +365,7 @@ The autochecker needs to SSH into your VM as **your main user** to run checks (t
 
    In the Telegram bot, when prompted for your VM username, run `whoami` on your VM and reply with the output.
 
-### 1.9. Set up LLM access (Qwen Code API)
-
-Your bot needs an LLM for the intent routing feature (Task 3). [Qwen Code](../../wiki/qwen-code.md#what-is-qwen-code) provides **1000 free requests per day** and works from Russia — no VPN or credit card needed.
-
-> [!NOTE]
-> If you set up the Qwen Code API in Lab 6, it should still be running on your VM. Verify by running this **on your VM**:
->
-> ```terminal
-> grep QWEN_CODE_API_KEY ~/qwen-code-oai-proxy/.env
-> ```
->
-> This shows your key. Then test it:
->
-> ```terminal
-> curl -s http://localhost:42005/v1/models -H "Authorization: Bearer YOUR_QWEN_CODE_API_KEY" | head -c 100
-> ```
->
-> Replace **`YOUR_QWEN_CODE_API_KEY`** with the value from the grep output.
->
-> If this returns a JSON response with model info, you're good — skip to the next step.
-
-1. [Set up the Qwen Code API on your VM](../../wiki/qwen-code-api-deployment.md#deploy-the-qwen-code-api-remote).
-
-   After completing the setup, you will have the Qwen API running on your VM at `http://localhost:42005/v1`.
-
-<details><summary><b>Alternative: OpenRouter (click to open)</b></summary>
-
-If you prefer [OpenRouter](https://openrouter.ai), register and get an API key. Then use:
-
-```text
-LLM_API_KEY=your-openrouter-key
-LLM_API_BASE_URL=https://openrouter.ai/api/v1
-LLM_API_MODEL=meta-llama/llama-3.3-70b-instruct:free
-```
-
-</details>
-
-### 1.10. Get a Telegram bot token
+### 1.9. Get a Telegram bot token
 
 You need a Telegram bot token to run your bot client.
 
@@ -440,34 +399,12 @@ You need a Telegram bot token to run your bot client.
    BOT_TOKEN=your-token-from-botfather
    LMS_API_BASE_URL=http://localhost:42002
    LMS_API_KEY=same-value-as-in-env-docker-secret
-   LLM_API_KEY=your-qwen-api-key-from-step-1.9
-   LLM_API_BASE_URL=http://localhost:42005/v1
-   LLM_API_MODEL=coder-model
    ```
 
-   The `LMS_API_KEY` must match what you set in `.env.docker.secret`. The `LLM_API_KEY` is the `QWEN_CODE_API_KEY` from step 1.9.
-
-8. Verify the LLM works from your VM:
-
-   ```terminal
-   curl -s http://localhost:42005/v1/chat/completions \
-     -H "Authorization: Bearer YOUR_QWEN_CODE_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"model":"coder-model","messages":[{"role":"user","content":"What is 2+2?"}]}' | head -c 100
-   ```
-
-   You should see a JSON response containing `"2 + 2 = 4"` or similar. If you get an error, fix the Qwen proxy setup (step 1.9) before continuing — the bot needs a working LLM for Task 3.
+   The `LMS_API_KEY` must match what you set in `.env.docker.secret`.
 
 > [!IMPORTANT]
 > Do not share your bot token or commit it to git. The file `.env.bot.secret` is already in `.gitignore` (any file matching `*.secret` is ignored).
-
-### 1.11. Coding agent
-
-> [!NOTE]
-> You should already have a coding agent from previous labs.
-> If not, [set one up](../../wiki/coding-agents.md#choose-and-use-a-coding-agent).
-
-In this lab, you will use the coding agent (Qwen Code) extensively to plan, scaffold, and implement your Telegram bot. The agent is your development partner — learn to collaborate with it effectively.
 
 ----
 

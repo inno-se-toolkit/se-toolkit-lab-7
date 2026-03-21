@@ -106,7 +106,7 @@ Depending on the lab, consider creating wiki files for:
 - `computer-networks.md` — Networking basics.
 - `architectural-views.md` — PlantUML component, sequence, and deployment diagrams.
 - `visualize-architecture.md` — Draw.io, PlantUML, and Mermaid for architecture diagrams.
-- `coding-agents.md` — LLM-based coding agents setup and configuration.
+- `tools.md` — Tool-based setup and configuration.
 - `useful-programs.md` — Command-line tools: curl, jq, find, ripgrep.
 
 ----
@@ -182,6 +182,6 @@ This provides: what it is, where to find it, official docs, and how to use it.
 - [ ] Task runner commands are documented in the config file (if the lab uses a task runner).
 - [ ] Seed project has three tiers: reference (working), debug (commented out with bugs), implement (placeholder templates) (if the lab uses the seed project pattern).
 - [ ] Placeholder templates include `# Reference:` comments mapping new resources to reference counterparts (if the lab uses placeholder-based implementation).
-- [ ] All tasks are completable without LLMs.
+- [ ] All tasks are completable without external assistance.
 - [ ] Docker images use an institutional container registry (if the lab uses Docker in an institutional setting).
 - [ ] API key or auth mechanism is set via environment variable and encountered naturally during exploration (if the lab includes security).

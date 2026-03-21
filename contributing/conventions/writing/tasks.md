@@ -23,7 +23,7 @@
   - [4.13. Placeholder-based implementation templates](#413-placeholder-based-implementation-templates)
   - [4.14. Seed project design](#414-seed-project-design)
   - [4.15. Holistic task design](#415-holistic-task-design)
-  - [4.16. LLM-independence](#416-llm-independence)
+  - [4.16. Independent completion](#416-independent-completion)
   - [4.17. Multi-bug debugging tasks](#417-multi-bug-debugging-tasks)
   - [4.18. Step checkpoints](#418-step-checkpoints)
   - [4.19. Recovery guidance](#419-recovery-guidance)
@@ -31,7 +31,7 @@
   - [4.21. Autochecker-verifiable outcomes](#421-autochecker-verifiable-outcomes)
   - [4.22. Separate-commits constraint](#422-separate-commits-constraint)
   - [4.23. Autochecker step at task end](#423-autochecker-step-at-task-end)
-  - [4.24. AI curation annotation format](#424-ai-curation-annotation-format)
+  - [4.24. Code curation annotation format](#424-code-curation-annotation-format)
   - [4.25. Multi-part tasks](#425-multi-part-tasks)
 - [5. Conceptual review dimensions](#5-conceptual-review-dimensions)
   - [5.1. D1. Learning objective clarity](#51-d1-learning-objective-clarity)
@@ -41,10 +41,10 @@
   - [5.5. D5. Acceptance criteria alignment](#55-d5-acceptance-criteria-alignment)
   - [5.6. D6. Difficulty and progression](#56-d6-difficulty-and-progression)
   - [5.7. D7. Practical usability](#57-d7-practical-usability)
-  - [5.8. D8. LLM-independence](#58-d8-llm-independence)
+  - [5.8. D8. Independent completion](#58-d8-independent-completion)
   - [5.9. D9. Git workflow coherence](#59-d9-git-workflow-coherence)
   - [5.10. D10. Conceptual gaps and misconceptions](#510-d10-conceptual-gaps-and-misconceptions)
-  - [5.11. D11. Controlled AI steps](#511-d11-controlled-ai-steps)
+  - [5.11. D11. Controlled helper steps](#511-d11-controlled-helper-steps)
   - [5.12. D12. Autochecker verifiability](#512-d12-autochecker-verifiability)
 - [6. Testing pattern](#6-testing-pattern)
 - [7. Checklist before publishing](#7-checklist-before-publishing)
@@ -425,17 +425,16 @@ Combine related concerns into a single task when they share the same learning ob
 
 Separate concerns into different tasks only when they produce fundamentally different artifacts or teach distinct skills. Example: API exploration via Swagger (produces a questionnaire) and database exploration via PgAdmin (produces a bug fix) belong in different tasks even though both involve the same system.
 
-### 4.16. LLM-independence
+### 4.16. Independent completion
 
-**Imperative tasks** must be completable without LLMs unless the task explicitly states that students must use an AI. This means:
+**Imperative tasks** must be completable without external assistance unless the task explicitly states otherwise. This means:
 
 - Provide placeholder templates, clear examples, and explicit step-by-step guidance.
 - Use simple, direct language in student-facing materials.
 - Provide fallback methods for every major operation.
-- The "Learning advice" section encourages LLM use for understanding, but tasks must not require it.
-- When a step's primary path requires AI use, add an `(AI)` suffix to its title (e.g., `#### 1.4.2. Implement the pipeline (AI)`). This lets students and reviewers instantly distinguish AI-required steps from AI-optional ones.
+- The "Learning advice" section may point students to docs or teammates for understanding, but tasks must not require outside help.
 
-**Declarative tasks** may assume coding agent use when the lab's learning objective is agentic engineering itself. In this case, `AGENTS.md` provides pedagogical guardrails (planning, explanation, incremental testing) so the agent teaches rather than just generates code. The task document still provides enough specification (CLI interface, JSON schema, acceptance criteria) that a student without an agent could complete it — but the expected workflow involves agent collaboration.
+**Declarative tasks** may assume guided collaboration when the lab's learning objective is collaborative tooling itself. In this case, `AGENTS.md` provides pedagogical guardrails (planning, explanation, incremental testing) so the workflow teaches rather than just generates code. The task document still provides enough specification (CLI interface, JSON schema, acceptance criteria) that a student could complete it without extra help — but the expected workflow involves collaboration.
 
 ### 4.17. Multi-bug debugging tasks
 
@@ -711,12 +710,12 @@ See [Provide fallback methods](#44-provide-fallback-methods), [Hints and solutio
 - Are there steps that could silently fail (no output, no checkpoint) leaving the student unaware of a problem?
 - Are hints or collapsible solutions provided for debugging/problem-solving steps where a student is expected to search for the answer?
 
-### 5.8. D8. LLM-independence
+### 5.8. D8. Independent completion
 
-See [LLM-independence](#416-llm-independence).
+See [Independent completion](#416-independent-completion).
 
-- **Imperative tasks:** Is the task completable without an LLM? If it requires AI use, is that stated explicitly? Are placeholders, examples, and step-by-step guidance sufficient for a student who doesn't use AI assistance?
-- **Declarative tasks:** Is the specification detailed enough that a student could complete it without an agent (even if harder)? Does `AGENTS.md` provide pedagogical guardrails so the agent teaches rather than just generates?
+- **Imperative tasks:** Is the task completable without external assistance? If it requires guided collaboration, is that stated explicitly? Are placeholders, examples, and step-by-step guidance sufficient for a student who doesn't use extra help?
+- **Declarative tasks:** Is the specification detailed enough that a student could complete it without a helper tool (even if harder)? Does `AGENTS.md` provide pedagogical guardrails so the tool teaches rather than just generates?
 
 ### 5.9. D9. Git workflow coherence
 
@@ -826,7 +825,7 @@ See [Autochecker-verifiable outcomes](#421-autochecker-verifiable-outcomes).
 - [ ] Task runner commands are documented in the config file (if the lab uses a task runner).
 - [ ] Seed project has three tiers: reference (working), debug (commented out with bugs), implement (placeholder templates) (if the lab uses the seed project pattern).
 - [ ] Placeholder templates include `# Reference:` comments mapping new resources to reference counterparts (if the lab uses placeholder-based implementation).
-- [ ] All tasks are completable without LLMs, unless the task explicitly states that students must use an AI.
-- [ ] AI curation steps specify the three annotation labels (`KEPT`, `FIXED`, `DISCARDED`), require at least one `DISCARDED` item, and use `test:` as the commit type (if the task requires AI-generated code curation).
+- [ ] All tasks are completable without external assistance, unless the task explicitly states otherwise.
+- [ ] Curation steps specify the three annotation labels (`KEPT`, `FIXED`, `DISCARDED`), require at least one `DISCARDED` item, and use `test:` as the commit type (if the task requires code curation).
 - [ ] Docker images use an institutional container registry (if the lab uses Docker in an institutional setting).
 - [ ] API key or auth mechanism is set via environment variable and encountered naturally during exploration (if the lab includes security).
