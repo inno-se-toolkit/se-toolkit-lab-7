@@ -2,7 +2,7 @@
 
 import httpx
 
-from services import lms
+from services import llm, lms
 
 
 async def handle_start() -> str:
@@ -69,3 +69,12 @@ async def handle_scores(lab: str) -> str:
 
 async def handle_unknown(command: str) -> str:
     return f"Unknown command: {command}. Use /help to see available commands."
+
+
+async def handle_route(text: str) -> str:
+    try:
+        return await llm.route(text)
+    except httpx.HTTPStatusError as e:
+        return f"❌ LLM error: HTTP {e.response.status_code}. Check LLM API settings."
+    except Exception as e:
+        return f"❌ LLM error: {e}"
