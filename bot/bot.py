@@ -97,17 +97,18 @@ async def run_telegram_bot() -> None:
         print("Error: BOT_TOKEN not set in .env.bot.secret")
         sys.exit(1)
 
-    # Create aiohttp session with SSL verification disabled
+    # Create aiohttp session factory with SSL verification disabled
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    connector = aiohttp.TCPConnector(ssl=ssl_context)
-    session = aiohttp.ClientSession(connector=connector)
+    def make_session():
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        return aiohttp.ClientSession(connector=connector)
 
     bot = Bot(
         token=settings.BOT_TOKEN,
-        session=session,
+        session_factory=make_session,
         default=DefaultBotProperties(parse_mode="HTML"),
     )
     dp = Dispatcher()
@@ -121,10 +122,7 @@ async def run_telegram_bot() -> None:
     dp.message.register(cmd_scores, Command("scores"))
 
     print("Bot is starting...")
-    try:
-        await dp.start_polling(bot)
-    finally:
-        await session.close()
+    await dp.start_polling(bot)
 
 
 def main() -> None:
