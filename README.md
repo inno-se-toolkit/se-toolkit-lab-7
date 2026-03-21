@@ -95,3 +95,46 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+### Required environment variables
+
+Create `.env.docker.secret` from the example and set:
+
+```text
+LMS_API_KEY=your-api-key
+AUTOCHECKER_API_LOGIN=your-email@innopolis.university
+AUTOCHECKER_API_PASSWORD=your-github-usernameyour-telegram-alias
+BOT_TOKEN=your-telegram-bot-token
+LLM_API_KEY=your-qwen-api-key
+LLM_API_BASE_URL=http://host.docker.internal:42005/v1
+LLM_API_MODEL=coder-model
+```
+
+### Start all services (backend + bot)
+
+```bash
+docker compose --env-file .env.docker.secret up --build -d
+```
+
+### Populate the database
+
+```bash
+curl -X POST http://localhost:42002/pipeline/sync \
+  -H "Authorization: Bearer YOUR_LMS_API_KEY" \
+  -H "Content-Type: application/json" -d '{}'
+```
+
+### Verify
+
+```bash
+# All services running
+docker compose --env-file .env.docker.secret ps
+
+# Backend healthy
+curl -s http://localhost:42002/items/ -H "Authorization: Bearer YOUR_LMS_API_KEY" | head -c 100
+
+# Bot logs
+docker compose --env-file .env.docker.secret logs bot --tail 20
+```
