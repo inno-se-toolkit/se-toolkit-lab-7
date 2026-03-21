@@ -7,6 +7,7 @@ Usage:
 
 import asyncio
 import inspect
+import ssl
 import sys
 
 import aiohttp
@@ -97,8 +98,16 @@ async def run_telegram_bot() -> None:
         print("Error: BOT_TOKEN not set in .env.bot.secret")
         sys.exit(1)
 
-    # Create session with SSL verification disabled
-    session = AiohttpSession(connector=aiohttp.TCPConnector(ssl=False))
+    # Create SSL context that disables verification
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
+    # Create connector with custom SSL context
+    connector = aiohttp.TCPConnector(ssl=ssl_context)
+
+    # Create session with connector factory
+    session = AiohttpSession(connector=lambda: connector)
 
     bot = Bot(
         token=settings.BOT_TOKEN,
