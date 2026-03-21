@@ -8,6 +8,23 @@ The bot is split into three layers:
 2. **Services** (`services/lms.py`) — `httpx` async client wrapping the LMS backend API. Handlers call services; services never know about Telegram.
 3. **Entry point** (`bot.py`) — wires handlers to either Telegram (aiogram polling) or stdout (`--test` mode).
 
+## Task 2 — Backend Integration (completed)
+
+All 5 slash commands are connected to the real LMS backend via `services/lms.py`:
+
+- `/start` — welcome message
+- `/help` — lists all commands with descriptions
+- `/health` — calls `GET /items/`, reports item count or connection error
+- `/labs` — calls `GET /items/`, filters by type `lab`, lists lab titles
+- `/scores <lab>` — calls `GET /analytics/pass-rates?lab=`, shows per-task avg scores and attempt counts
+
+Error handling covers `httpx.ConnectError` (connection refused) and `HTTPStatusError` (HTTP 4xx/5xx). Both return friendly messages that include the actual error detail — no raw tracebacks, no vague "something went wrong".
+
+Edge cases handled:
+- `/scores` with no argument → usage hint
+- `/scores lab-99` (non-existent lab) → graceful "no data found" message
+- `/unknown` → suggests `/help`
+
 ## Task breakdown
 
 ### Task 1 — Scaffold
