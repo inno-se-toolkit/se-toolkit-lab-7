@@ -55,41 +55,54 @@ class ApiLogsPage(BaseModel):
 
 
 async def fetch_items() -> list[ApiItem]:
-    """Fetch the lab/task catalog from the autochecker API."""
-    async with httpx.AsyncClient(timeout=60) as client:
-        resp = await client.get(
-            f"{settings.autochecker_api_url}/api/items",
-            auth=(settings.autochecker_email, settings.autochecker_password),
-        )
-        resp.raise_for_status()
-        return [ApiItem.model_validate(item) for item in resp.json()]
-
-
-async def fetch_logs(since: datetime | None = None) -> list[ApiLog]:
-    """Fetch check results from the autochecker API with pagination."""
-    all_logs: list[ApiLog] = []
-
-    async with httpx.AsyncClient(timeout=60) as client:
-        cursor = since
-        while True:
-            params: dict[str, str | int] = {"limit": 500}
-            if cursor is not None:
-                params["since"] = cursor.isoformat()
-
+    """Fetch the lab/task catalog from the autochecker API.
+    
+    Returns an empty list if the API is unreachable.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
             resp = await client.get(
-                f"{settings.autochecker_api_url}/api/logs",
-                params=params,
+                f"{settings.autochecker_api_url}/api/items",
                 auth=(settings.autochecker_email, settings.autochecker_password),
             )
             resp.raise_for_status()
-            page = ApiLogsPage.model_validate(resp.json())
+            return [ApiItem.model_validate(item) for item in resp.json()]
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError) as e:
+        print(f"Warning: Failed to fetch items from autochecker API: {e}")
+        return []
 
-            all_logs.extend(page.logs)
 
-            if not page.has_more or not page.logs:
-                break
+async def fetch_logs(since: datetime | None = None) -> list[ApiLog]:
+    """Fetch check results from the autochecker API with pagination.
+    
+    Returns an empty list if the API is unreachable.
+    """
+    all_logs: list[ApiLog] = []
 
-            cursor = datetime.fromisoformat(page.logs[-1].submitted_at)
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            cursor = since
+            while True:
+                params: dict[str, str | int] = {"limit": 500}
+                if cursor is not None:
+                    params["since"] = cursor.isoformat()
+
+                resp = await client.get(
+                    f"{settings.autochecker_api_url}/api/logs",
+                    params=params,
+                    auth=(settings.autochecker_email, settings.autochecker_password),
+                )
+                resp.raise_for_status()
+                page = ApiLogsPage.model_validate(resp.json())
+
+                all_logs.extend(page.logs)
+
+                if not page.has_more or not page.logs:
+                    break
+
+                cursor = datetime.fromisoformat(page.logs[-1].submitted_at)
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError) as e:
+        print(f"Warning: Failed to fetch logs from autochecker API: {e}")
 
     return all_logs
 
@@ -224,10 +237,16 @@ async def load_logs(
 
 
 async def sync(session: AsyncSession) -> dict[str, int]:
-    """Run the full ETL pipeline."""
+    """Run the full ETL pipeline.
+    
+    If the autochecker API is unreachable, returns current record count.
+    """
     # Fetch and load items
     api_items = await fetch_items()
-    await load_items(api_items, session)
+    if api_items:
+        await load_items(api_items, session)
+    else:
+        print("No items to sync (API may be unreachable)")
 
     # Determine last sync point
     result = (await session.exec(select(func.max(InteractionLog.created_at)))).first()
@@ -235,7 +254,11 @@ async def sync(session: AsyncSession) -> dict[str, int]:
 
     # Fetch and load logs
     logs = await fetch_logs(since)
-    new_count = await load_logs(logs, api_items, session)
+    if logs:
+        new_count = await load_logs(logs, api_items, session)
+    else:
+        new_count = 0
+        print("No logs to sync (API may be unreachable)")
 
     # Total count
     total = (await session.exec(select(func.count(col(InteractionLog.id))))).one()
