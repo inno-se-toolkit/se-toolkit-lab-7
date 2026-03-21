@@ -9,23 +9,28 @@ This document outlines the development strategy for the SE Toolkit Telegram Bot.
 - Configure `uv` for dependency management via `pyproject.toml`.
 - Define environment variable standards (`.env.bot.example` vs `.env.bot.secret`).
 
-## Phase 2: Backend Integration
-- Implement `services/lms_client.py` to interact with the existing backend API.
-- Securely handle `LMS_API_KEY` and `LMS_API_BASE_URL` via config.
-- Create `services/llm_client.py` for natural language intent processing.
-- Ensure all service calls are mocked during unit testing.
+## Phase 2: Backend Integration (Completed)
+- ✅ Implemented `services/lms_client.py` with async httpx client
+- ✅ Added error handling that shows actual errors without raw tracebacks
+- ✅ Connected handlers to real backend endpoints:
+  - `/health` → GET /items/ for health check
+  - `/labs` → GET /items/ parsed for unique labs
+  - `/scores <lab>` → GET /analytics/pass-rates?lab=<lab>
+- ✅ All commands work in both `--test` mode and Telegram mode
+- ✅ Natural language fallback with keyword matching
+- ✅ Proper async/await handling in Telegram handlers
 
-## Phase 3: Intent Routing & Logic
-- Expand `handlers/` to support complex commands (`/scores`, `/labs`).
-- Implement natural language processing for queries like "what labs are available".
-- Connect handlers to services: Handlers orchestrate, Services execute.
-- Add error handling for API failures (timeouts, auth errors).
+## Phase 3: Intent Routing & Logic (Next)
+- Implement smarter NLP intent detection (beyond keyword matching)
+- Add caching layer for API responses to reduce backend load
+- Support pagination for large lab lists
+- Add user context (remember last viewed lab, etc.)
 
-## Phase 4: Deployment & Monitoring
-- Containerize the bot using Docker (align with existing `docker-compose.yml`).
-- Set up production logging (JSON format, log levels).
-- Configure CI/CD pipeline for automated testing before deployment.
-- Implement health checks for orchestration tools.
+## Phase 4: Deployment & Monitoring (Future)
+- Containerize bot with Docker
+- Add structured JSON logging for production
+- Implement health check endpoint for orchestration
+- Set up CI/CD with automated tests
 
 ## Testing Strategy
 - Unit tests for handlers (pure functions).
