@@ -30,7 +30,7 @@ from handlers.commands import (
 def get_handler_for_command(command: str) -> callable:
     """Route command to appropriate handler."""
     command = command.lstrip("/")
-    
+
     handlers = {
         "start": handle_start,
         "help": handle_help,
@@ -38,19 +38,27 @@ def get_handler_for_command(command: str) -> callable:
         "labs": handle_labs,
         "scores": handle_scores,
     }
-    
+
     return handlers.get(command)
 
 
 def run_test_mode(command: str) -> None:
     """Run handler directly and print result to stdout."""
-    handler = get_handler_for_command(command)
-    
+    # Split command and arguments (e.g., "/scores lab-04" -> "scores", "lab-04")
+    parts = command.strip().split(None, 1)
+    cmd = parts[0].lstrip("/")
+    arg = parts[1] if len(parts) > 1 else None
+
+    handler = get_handler_for_command(cmd)
+
     if handler is None:
-        print(f"Unknown command: {command}")
+        print(f"Unknown command: {cmd}")
         sys.exit(1)
-    
-    response = handler()
+
+    if arg is not None:
+        response = handler(arg)
+    else:
+        response = handler()
     print(response)
     sys.exit(0)
 
@@ -71,9 +79,9 @@ def main() -> None:
         metavar="COMMAND",
         help="Run in test mode with the given command (e.g., '/start')",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.test:
         run_test_mode(args.test)
     else:
