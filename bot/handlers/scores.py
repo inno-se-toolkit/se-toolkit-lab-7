@@ -120,56 +120,67 @@ def _get_specific_score(lab_arg: str) -> HandlerResult:
     settings = get_settings()
     backend_url = settings.lms_api_url.rstrip("/")
 
-    # Normalize lab argument to lab-XX format
-    if lab_arg.isdigit():
-        lab_id = f"lab-{int(lab_arg):02d}"
-    elif not lab_arg.lower().startswith("lab-"):
-        lab_id = f"lab-{lab_arg.zfill(2)}"
-    else:
-        lab_id = lab_arg.lower()
-
     try:
-        # Get pass rates for this lab
+        # First try to get pass rates (lab-7 backend)
         data = _fetch_json(
-            f"{backend_url}/analytics/pass-rates?lab={lab_id}",
+            f"{backend_url}/analytics/pass-rates?lab={lab_arg}",
             settings.lms_api_key,
         )
         pass_rates = data.get("pass_rates", [])
 
-        if not pass_rates:
-            # Try to get lab info at least
-            items_data = _fetch_json(f"{backend_url}/items/", settings.lms_api_key)
-            # API can return {"items": [...]} or just [...]
-            if isinstance(items_data, dict):
-                items = items_data.get("items", [])
-            elif isinstance(items_data, list):
-                items = items_data
-            else:
-                items = []
-            lab_items = [i for i in items if i.get("lab_id", "").lower() == lab_id]
-            if lab_items:
-                title = lab_items[0].get("lab_title", lab_id)
-                return HandlerResult.ok(
-                    f"📊 {title}\n\n"
-                    f"ℹ️ Статистика пока недоступна.\n"
-                    f"Заданий: {len(lab_items)}"
-                )
-            return HandlerResult.fail(
-                error="no_data",
-                message=f"ℹ️ Статистика по \"{lab_id}\" пока недоступна.",
+        if pass_rates:
+            # Format pass rates (lab-7 format)
+            lab_title = pass_rates[0].get("lab_title", lab_arg) if pass_rates else lab_arg
+            lines = [f"📊 {lab_title}\n", "Процент сдачи:\n"]
+
+            for task in pass_rates:
+                task_name = task.get("task_title", task.get("task_id", "Без названия"))
+                pass_rate = task.get("pass_rate", 0)
+                attempts = task.get("attempts", 0)
+                lines.append(f"• {task_name}: {pass_rate:.1f}% ({attempts} попыток)")
+
+            return HandlerResult.ok("\n".join(lines))
+
+    except (urllib.error.HTTPError, urllib.error.URLError, Exception):
+        pass  # Fall through to lab-4 format
+
+    # Lab-4 backend doesn't have analytics, return lab info instead
+    try:
+        data = _fetch_json(f"{backend_url}/items/", settings.lms_api_key)
+        if isinstance(data, dict):
+            items = data.get("items", [])
+        elif isinstance(data, list):
+            items = data
+        else:
+            items = []
+
+        # Filter only labs
+        labs = [item for item in items if item.get("type") == "lab"]
+
+        # Try to find lab by index or title
+        lab_item = None
+        if lab_arg.isdigit():
+            idx = int(lab_arg) - 1
+            if 0 <= idx < len(labs):
+                lab_item = labs[idx]
+        else:
+            for lab in labs:
+                if lab_arg.lower() in lab.get("title", "").lower():
+                    lab_item = lab
+                    break
+
+        if lab_item:
+            title = lab_item.get("title", lab_arg)
+            return HandlerResult.ok(
+                f"📊 {title}\n\n"
+                f"ℹ️ Статистика по этой лаборатории пока недоступна.\n"
+                f"Backend не предоставляет данные об оценках для этой работы."
             )
 
-        # Format pass rates
-        lab_title = pass_rates[0].get("lab_title", lab_id) if pass_rates else lab_id
-        lines = [f"📊 {lab_title}\n", "Процент сдачи:\n"]
-
-        for task in pass_rates:
-            task_name = task.get("task_title", task.get("task_id", "Без названия"))
-            pass_rate = task.get("pass_rate", 0)
-            attempts = task.get("attempts", 0)
-            lines.append(f"• {task_name}: {pass_rate:.1f}% ({attempts} попыток)")
-
-        return HandlerResult.ok("\n".join(lines))
+        return HandlerResult.fail(
+            error="lab_not_found",
+            message=f"❌ Лабораторная работа \"{lab_arg}\" не найдена.",
+        )
 
     except urllib.error.HTTPError as e:
         if e.code == 404:

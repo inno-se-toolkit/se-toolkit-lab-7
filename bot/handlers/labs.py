@@ -61,24 +61,19 @@ def handle_labs(args: str = "") -> HandlerResult:
         if not items:
             return HandlerResult.ok("ℹ️ Лабораторные работы пока не добавлены.")
 
-        # Group items by lab
-        labs_dict = {}
-        for item in items:
-            lab_id = item.get("lab_id", "")
-            if lab_id:
-                if lab_id not in labs_dict:
-                    labs_dict[lab_id] = {
-                        "title": item.get("lab_title", lab_id),
-                        "tasks": [],
-                    }
-                labs_dict[lab_id]["tasks"].append(item)
+        # Filter only labs (type: lab)
+        labs = [item for item in items if item.get("type") == "lab"]
+
+        if not labs:
+            return HandlerResult.ok("ℹ️ Лабораторные работы пока не добавлены.")
 
         lines = ["🔬 Доступные лабораторные работы:\n"]
-        for i, (lab_id, lab_data) in enumerate(sorted(labs_dict.items()), 1):
-            title = lab_data["title"]
-            task_count = len(lab_data["tasks"])
+        for i, lab in enumerate(labs, 1):
+            title = lab.get("title", "Без названия")
+            description = lab.get("description", "")[:100]
             lines.append(f"{i}. {title}")
-            lines.append(f"   Заданий: {task_count}")
+            if description:
+                lines.append(f"   {description}")
             lines.append("")
 
         message = "\n".join(lines)
@@ -122,14 +117,6 @@ def _get_specific_lab(lab_arg: str) -> HandlerResult:
     settings = get_settings()
     backend_url = settings.lms_api_url.rstrip("/")
 
-    # Normalize lab argument to lab-XX format
-    if lab_arg.isdigit():
-        lab_id = f"lab-{int(lab_arg):02d}"
-    elif not lab_arg.lower().startswith("lab-"):
-        lab_id = f"lab-{lab_arg.zfill(2)}"
-    else:
-        lab_id = lab_arg.lower()
-
     try:
         data = _fetch_json(f"{backend_url}/items/", settings.lms_api_key)
         # API can return {"items": [...]} or just [...]
@@ -140,24 +127,40 @@ def _get_specific_lab(lab_arg: str) -> HandlerResult:
         else:
             items = []
 
-        # Filter items for this lab
-        lab_items = [item for item in items if item.get("lab_id", "").lower() == lab_id]
+        # Filter only labs
+        labs = [item for item in items if item.get("type") == "lab"]
 
-        if not lab_items:
+        # Try to find lab by index or title
+        lab_item = None
+        if lab_arg.isdigit():
+            idx = int(lab_arg) - 1
+            if 0 <= idx < len(labs):
+                lab_item = labs[idx]
+        else:
+            # Search by title
+            for lab in labs:
+                if lab_arg.lower() in lab.get("title", "").lower():
+                    lab_item = lab
+                    break
+
+        if not lab_item:
             return HandlerResult.fail(
                 error="lab_not_found",
                 message=f"❌ Лабораторная работа \"{lab_arg}\" не найдена.",
             )
 
-        lab_title = lab_items[0].get("lab_title", lab_id)
-        lines = [f"🔬 {lab_title}\n", "Задания:\n"]
+        title = lab_item.get("title", "Без названия")
+        description = lab_item.get("description", "")
+        attributes = lab_item.get("attributes", {})
+        start_date = attributes.get("start", "N/A")
+        finish_date = attributes.get("finish", "N/A")
 
-        for item in lab_items:
-            task_title = item.get("title", "Без названия")
-            task_type = item.get("type", "unknown")
-            lines.append(f"• {task_title}")
-            lines.append(f"  Тип: {task_type}")
-            lines.append("")
+        lines = [
+            f"🔬 {title}\n",
+            f"📝 Описание: {description}\n",
+            f"📅 Начало: {start_date}",
+            f"📅 Окончание: {finish_date}",
+        ]
 
         return HandlerResult.ok("\n".join(lines))
 
