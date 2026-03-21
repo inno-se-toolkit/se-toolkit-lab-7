@@ -11,6 +11,7 @@ Test mode prints the response to stdout without connecting to Telegram.
 import sys
 import asyncio
 import argparse
+import re
 from typing import Optional
 
 from handlers import (
@@ -21,6 +22,7 @@ from handlers import (
     handle_scores,
     handle_unknown
 )
+from keyboards import get_main_keyboard, get_labs_keyboard
 
 from config import load_config
 from services.lms_client import LMSClient
@@ -55,6 +57,28 @@ async def process_command(command: str, args: str, lms_client: Optional[LMSClien
         return f"⚠️ Неизвестная команда: {command}\n\nИспользуйте /help для списка команд."
 
 
+async def process_natural_language(text: str, lms_client: LMSClient, llm_client: Optional[LLMClient]) -> str:
+    """Process natural language message using LLM for intent classification."""
+    if not llm_client:
+        return "⚠️ LLM не настроен. Используйте команды (/start, /help, /health, /labs, /scores)."
+    
+    # Try to classify intent
+    classified = await llm_client.classify_intent(text)
+    
+    if classified:
+        command, args = parse_command(classified)
+        if command:
+            return await process_command(command, args, lms_client, llm_client)
+    
+    # If classification failed, try to extract lab number and assume scores request
+    if re.search(r'\b(lab|лаб|лабораторная)\s*(\d+|-\d+)', text, re.IGNORECASE):
+        lab_id = await llm_client.extract_lab_number(text)
+        if lab_id:
+            return await handle_scores(lab_id, lms_client)
+    
+    return "⚠️ Я не понял ваш запрос. Попробуйте использовать команды (/help для списка) или задайте вопрос о лабораторных работах."
+
+
 async def run_test_mode(command_text: str, config: dict) -> None:
     """Run in test mode - process command and print response."""
     # Always create LMS client for test mode
@@ -80,7 +104,8 @@ async def run_test_mode(command_text: str, config: dict) -> None:
     if command:
         response = await process_command(command, args, lms_client, llm_client)
     else:
-        response = "⚠️ Не удалось распознать команду. Используйте /help для списка команд."
+        # Natural language input in test mode
+        response = await process_natural_language(command_text, lms_client, llm_client)
 
     print(response)
 
@@ -89,7 +114,7 @@ async def run_telegram_mode(config: dict) -> None:
     """Run the Telegram bot."""
     from aiogram import Bot, Dispatcher
     from aiogram.filters import Command, CommandStart
-    from aiogram.types import Message
+    from aiogram.types import Message, CallbackQuery
 
     if not config.get("bot_token"):
         print("Error: BOT_TOKEN not set. Please configure .env.bot.secret")
@@ -117,12 +142,12 @@ async def run_telegram_mode(config: dict) -> None:
     @dp.message(CommandStart())
     async def cmd_start(message: Message):
         response = await handle_start(lms_client)
-        await message.answer(response)
+        await message.answer(response, reply_markup=get_main_keyboard())
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         response = await handle_help(lms_client)
-        await message.answer(response)
+        await message.answer(response, reply_markup=get_main_keyboard())
 
     @dp.message(Command("health"))
     async def cmd_health(message: Message):
@@ -132,7 +157,9 @@ async def run_telegram_mode(config: dict) -> None:
     @dp.message(Command("labs"))
     async def cmd_labs(message: Message):
         response = await handle_labs(lms_client)
-        await message.answer(response)
+        labs = await lms_client.get_labs()
+        keyboard = get_labs_keyboard(labs) if labs else None
+        await message.answer(response, reply_markup=keyboard)
 
     @dp.message(Command("scores"))
     async def cmd_scores(message: Message):
@@ -143,20 +170,35 @@ async def run_telegram_mode(config: dict) -> None:
     @dp.message()
     async def handle_message(message: Message):
         """Handle plain text messages using LLM for intent routing."""
-        if not llm_client:
-            await message.answer("⚠️ LLM не настроен. Используйте команды (/start, /help, /health, /labs, /scores).")
-            return
-
         user_text = message.text or ""
-        classified = await llm_client.classify_intent(user_text)
-
-        if classified:
-            cmd, args = parse_command(classified)
-            response = await process_command(cmd, args, lms_client, llm_client)
-        else:
-            response = "⚠️ Я не понял ваш запрос. Попробуйте использовать команды (/help для списка)."
-
+        response = await process_natural_language(user_text, lms_client, llm_client)
         await message.answer(response)
+
+    @dp.callback_query()
+    async def handle_callback(callback: CallbackQuery):
+        """Handle inline keyboard button clicks."""
+        data = callback.data or ""
+        
+        if data == "cmd_start":
+            response = await handle_start(lms_client)
+            await callback.message.edit_text(response, reply_markup=get_main_keyboard())
+        elif data == "cmd_help":
+            response = await handle_help(lms_client)
+            await callback.message.edit_text(response, reply_markup=get_main_keyboard())
+        elif data == "cmd_health":
+            response = await handle_health(lms_client)
+            await callback.message.edit_text(response)
+        elif data == "cmd_labs":
+            response = await handle_labs(lms_client)
+            labs = await lms_client.get_labs()
+            keyboard = get_labs_keyboard(labs) if labs else None
+            await callback.message.edit_text(response, reply_markup=keyboard)
+        elif data.startswith("scores_"):
+            lab_id = data.replace("scores_", "")
+            response = await handle_scores(f"lab-{lab_id}", lms_client)
+            await callback.message.edit_text(response)
+        
+        await callback.answer()
 
     print("Bot is running... Press Ctrl+C to stop.")
     await dp.start_polling(bot)
