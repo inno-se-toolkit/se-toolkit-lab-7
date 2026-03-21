@@ -14,7 +14,6 @@
 - [`Caddy` duties](#caddy-duties)
   - [Listen on the specific port](#listen-on-the-specific-port)
   - [Forward requests to the backend](#forward-requests-to-the-backend)
-  - [Forward requests to the `Qwen Code` API](#forward-requests-to-the-qwen-code-api)
   - [Forward requests to `pgAdmin`](#forward-requests-to-pgadmin)
   - [Serve frontend files](#serve-frontend-files)
 
@@ -90,7 +89,6 @@ The [`Caddyfile`](./caddy.md#caddyfile) at [`caddy/Caddyfile`](../caddy/Caddyfil
 <!-- no toc -->
 - [Listen on the specific port](./computer-networks.md#listen-on-a-port) inside a [`Docker` container](./docker.md#container).
 - [Forward requests to the backend](#forward-requests-to-the-backend)
-- [Forward requests to the `Qwen Code` API](#forward-requests-to-the-qwen-code-api)
 - [Forward requests to the `pgAdmin`](#forward-requests-to-pgadmin)
 - [Serve the frontend files](#serve-frontend-files)
 
@@ -109,12 +107,6 @@ The [`Caddyfile`](./caddy.md#caddyfile) at [`caddy/Caddyfile`](../caddy/Caddyfil
 - `/analytics*`
 - `/docs*`
 - `/openapi.json`
-
-### Forward requests to the `Qwen Code` API
-
-`Caddy` routes to the [`Qwen Code` API](./qwen-code-api.md#what-is-qwen-code-api) these [API endpoints](./web-api.md#endpoint):
-
-- `/utils/qwen-code-api*`
 
 ### Forward requests to `pgAdmin`
 

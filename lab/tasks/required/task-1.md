@@ -2,7 +2,7 @@
 
 Before writing any feature code, you need a solid project structure and a plan. A well-scaffolded project makes everything easier: adding commands, testing, deploying. A bad structure means fighting the code at every step.
 
-In this task, you use your coding agent to create a development plan and project skeleton.
+In this task, you create a development plan and project skeleton.
 
 ## Requirements targeted
 
@@ -18,9 +18,9 @@ se-toolkit-lab-7/
 ├── bot/                    ← NEW
 │   ├── bot.py              ← entry point (Telegram startup + --test mode)
 │   ├── handlers/           ← command handlers (no Telegram dependency)
-│   ├── services/           ← API client, LLM client
+│   ├── services/           ← API client and related helpers
 │   ├── config.py           ← env var loading
-│   ├── pyproject.toml    ← bot dependencies
+│   ├── pyproject.toml      ← bot dependencies
 │   └── PLAN.md             ← development plan
 ├── backend/                ← existing
 ├── frontend/               ← existing
@@ -39,22 +39,22 @@ uv run bot.py --test "/start"                    # → prints welcome message
 uv run bot.py --test "/help"                     # → prints command list
 uv run bot.py --test "/health"                   # → prints backend status
 uv run bot.py --test "/scores lab-04"
-uv run bot.py --test "what labs are available"    # Task 3
+uv run bot.py --test "/labs"
 ```
 
 - Prints response to **stdout**, exits with code **0**
-- Reads config from `.env.bot.secret` (`LMS_API_BASE_URL`, `LMS_API_KEY`, `LLM_API_KEY`)
+- Reads config from `.env.bot.secret` (`LMS_API_BASE_URL`, `LMS_API_KEY`)
 - Does **not** connect to Telegram (no `BOT_TOKEN` needed in test mode)
 
 ## Deliverables
 
 ### 1. Development plan (`bot/PLAN.md`)
 
-A plan produced with your coding agent. Describe the approach for all tasks: scaffold, backend integration, intent routing, deployment. At least 100 words.
+A plan you write before coding. Describe the approach for all tasks: scaffold, backend integration, navigation, deployment. At least 100 words.
 
 ### 2. Bot entry point (`bot/bot.py`)
 
-Ask your coding agent to create the entry point with `--test` mode support. Handlers can return placeholder text for now — real implementation comes in Task 2. Your job is to verify it works and understand the architecture (see [Test mode](#test-mode) above).
+Create the entry point with `--test` mode support. Handlers can return placeholder text for now — real implementation comes in Task 2. Your job is to verify it works and understand the architecture (see [Test mode](#test-mode) above).
 
 ### 3. Handler directory (`bot/handlers/`)
 
@@ -92,9 +92,9 @@ uv run bot.py --test "/labs"
 
 **What to check:**
 
-- Each command prints *something* to stdout (even "Not implemented yet" is fine for this task)
+- Each command prints *something* to stdout
 - No Python tracebacks
-- Exit code is 0 (the command doesn't show an error)
+- Exit code is 0
 
 ### Deploy and verify in Telegram
 
@@ -115,34 +115,3 @@ After verifying with `--test`, deploy the bot on your VM and check it responds i
    ```
 
 3. Open Telegram and send `/start` to your bot. You should see the welcome message.
-
-**If the bot doesn't respond in Telegram:**
-
-1. Check the log: `tail -20 bot.log`
-2. Common issues:
-   - `BOT_TOKEN` is wrong or missing in `.env.bot.secret`
-   - Another bot process is already running (check `ps aux | grep bot.py`)
-   - `.env.bot.secret` doesn't exist (copy from `.env.bot.example`)
-
-## Acceptance criteria
-
-### On `GitHub`
-
-- [ ] [`Git workflow`](../../../wiki/git-workflow.md) followed (issue, branch, PR, review, merge).
-
-### On `GitHub` on the `main` branch
-
-- [ ] `bot/PLAN.md` with at least 100 words exists.
-- [ ] `bot/pyproject.toml` exists.
-- [ ] `bot/handlers/` directory with at least one module exists.
-
-### On the VM (REMOTE)
-
-- [ ] Repo is cloned at `~/se-toolkit-lab-7`.
-- [ ] `.env.bot.secret` with `BOT_TOKEN`, `LMS_API_KEY` exists.
-- [ ] `cd bot && uv sync` succeeds.
-- [ ] `cd bot && uv run bot.py --test "/start"` exits 0 with non-empty output.
-
-### In `Telegram`
-
-- [ ] Bot responds to `/start`.

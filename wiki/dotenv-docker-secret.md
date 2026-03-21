@@ -38,12 +38,6 @@
   - [`AUTOCHECKER_API_PASSWORD`](#autochecker_api_password)
 - [Telegram bot](#telegram-bot)
   - [`BOT_TOKEN`](#bot_token)
-- [LLM API](#llm-api)
-  - [`LLM_API_KEY`](#llm_api_key)
-  - [`LLM_API_BASE_URL`](#llm_api_base_url)
-  - [`LLM_API_MODEL`](#llm_api_model)
-- [`Qwen Code` API](#qwen-code-api)
-  - [`QWEN_CODE_API_URL`](#qwen_code_api_url)
 - [Constants](#constants)
   - [`CONST_POSTGRESQL_SERVICE_NAME`](#const_postgresql_service_name)
   - [`CONST_POSTGRESQL_SERVER_NAME`](#const_postgresql_server_name)
@@ -267,36 +261,6 @@ Variables for the [Telegram bot](./bot.md#about-telegram-bots).
 The Telegram bot token obtained from [`@BotFather`](https://core.telegram.org/bots#botfather).
 
 Default: `<bot-token>`
-
-## LLM API
-
-Variables for the [LLM API](./llm-api.md#about-llm-api) that powers the [bot](./bot.md#about-telegram-bots).
-
-### `LLM_API_KEY`
-
-The [LLM API key](./llm-api.md#llm-api-key).
-
-Default: `<llm-api-key>`
-
-### `LLM_API_BASE_URL`
-
-The [LLM API base URL](./llm-api.md#llm-api-base-url).
-
-Default: `<llm-api-base-url>`
-
-### `LLM_API_MODEL`
-
-The [LLM API model](./llm-api.md#llm-api-model).
-
-Default: `<llm-api-model>`
-
-## `Qwen Code` API
-
-### `QWEN_CODE_API_URL`
-
-[`Qwen Code` API URL](./qwen-code-api.md#what-is-qwen-code-api) that [`Caddy` forwards requests to](./lms-api.md#forward-requests-to-the-qwen-code-api).
-
-Default: `http://qwen-code-api:8080`
 
 ## Constants
 
