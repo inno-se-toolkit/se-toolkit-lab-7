@@ -7,12 +7,12 @@ Usage:
 
 import asyncio
 import inspect
-import ssl
 import sys
 
 import aiohttp
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.filters import Command, CommandStart
 
 from config import settings
@@ -97,18 +97,12 @@ async def run_telegram_bot() -> None:
         print("Error: BOT_TOKEN not set in .env.bot.secret")
         sys.exit(1)
 
-    # Create aiohttp session factory with SSL verification disabled
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-
-    def make_session():
-        connector = aiohttp.TCPConnector(ssl=ssl_context)
-        return aiohttp.ClientSession(connector=connector)
+    # Create session with SSL verification disabled
+    session = AiohttpSession(connector=aiohttp.TCPConnector(ssl=False))
 
     bot = Bot(
         token=settings.BOT_TOKEN,
-        session_factory=make_session,
+        session=session,
         default=DefaultBotProperties(parse_mode="HTML"),
     )
     dp = Dispatcher()
