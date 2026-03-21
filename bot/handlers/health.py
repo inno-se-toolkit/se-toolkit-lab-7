@@ -49,8 +49,8 @@ def handle_health(args: str = "") -> HandlerResult:
                 items = []
             item_count = len(items) if isinstance(items, list) else "N/A"
             message = (
-                f"✅ Backend здоров\n\n"
-                f"📊 Доступно элементов: {item_count}\n"
+                f"✅ Backend is healthy and running\n\n"
+                f"📊 items: {item_count}\n"
                 f"🔗 URL: {backend_url}"
             )
             return HandlerResult.ok(message)
