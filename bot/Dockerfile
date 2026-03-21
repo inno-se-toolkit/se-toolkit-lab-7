@@ -8,12 +8,11 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Copy project files
+# Copy project files (Dockerfile is in bot/ directory)
 COPY pyproject.toml uv.lock* ./
-COPY bot/ ./bot/
-COPY services/ ./services/
+COPY bot.py config.py ./
 COPY handlers/ ./handlers/
-COPY config.py ./
+COPY services/ ./services/
 
 # Install dependencies
 RUN uv sync --frozen --no-dev
@@ -22,4 +21,4 @@ RUN uv sync --frozen --no-dev
 ENV PYTHONPATH=/app
 
 # Run the bot
-CMD ["uv", "run", "bot/bot.py"]
+CMD ["uv", "run", "bot.py"]
