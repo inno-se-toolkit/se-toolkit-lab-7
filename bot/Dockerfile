@@ -13,9 +13,9 @@ COPY ../uv.lock ./
 
 # Copy project files
 COPY ../pyproject.toml ./
-COPY bot.py config.py ./
-COPY handlers/ ./handlers/
-COPY services/ ./services/
+COPY bot/bot.py bot/config.py ./
+COPY bot/handlers/ ./handlers/
+COPY bot/services/ ./services/
 
 # Install dependencies (use --frozen since we have uv.lock)
 RUN uv sync --frozen --no-dev
