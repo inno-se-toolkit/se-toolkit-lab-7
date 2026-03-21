@@ -96,3 +96,16 @@ networks:
   lms-network:
     name: lms-network
     attachable: true
+
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    container_name: se-toolkit-lab-7-bot-1
+    env_file:
+      - .env.bot.secret
+    depends_on:
+      - backend
+    networks:
+      - default
+    restart: unless-stopped
