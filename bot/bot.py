@@ -52,8 +52,8 @@ def run_test_mode(command: str) -> None:
     handler = get_handler_for_command(cmd)
 
     if handler is None:
-        print(f"Unknown command: {cmd}")
-        sys.exit(1)
+        print(f"Unknown command: {cmd}. Use /help to see available commands.")
+        sys.exit(0)  # Exit with 0 - unknown commands should not crash
 
     if arg is not None:
         response = handler(arg)
