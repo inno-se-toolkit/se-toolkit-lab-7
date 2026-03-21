@@ -1,4 +1,5 @@
 import argparse
+from telegram.ext import ContextTypes
 import sys
 import logging
 from config import Config
@@ -55,47 +56,83 @@ def run_test_mode(command: str):
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+        
+
+async def handle_start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Telegram handler for /start"""
+    text = update.message.text if update.message else ""
+    try:
+        response = handle_start(text)  # Call your pure handler
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    except Exception as e:
+        logger.error(f"Error in /start: {e}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="An error occurred processing your request.")
+
+async def handle_help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text if update.message else ""
+    try:
+        response = handle_help(text)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    except Exception as e:
+        logger.error(f"Error in /help: {e}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="An error occurred processing your request.")
+
+async def handle_health_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text if update.message else ""
+    try:
+        response = handle_health(text)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    except Exception as e:
+        logger.error(f"Error in /health: {e}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="An error occurred processing your request.")
+
+async def handle_scores_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text if update.message else ""
+    try:
+        response = handle_scores(text)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    except Exception as e:
+        logger.error(f"Error in /scores: {e}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="An error occurred processing your request.")
+
+async def handle_natural_language_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Fallback for non-command messages"""
+    text = update.message.text if update.message else ""
+    try:
+        response = handle_natural_language(text)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    except Exception as e:
+        logger.error(f"Error in natural language handler: {e}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="An error occurred processing your request.")
 
 def run_telegram_mode():
-    """
-    Initializes the Telegram bot and starts polling.
-    """
+    """Initializes the Telegram bot and starts polling."""
     try:
         from telegram import Update
-        from telegram.ext import Application, CommandHandler, MessageHandler, filters
+        from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
         
         Config.validate(require_telegram=True)
         
         app = Application.builder().token(Config.BOT_TOKEN).build()
         
-        # Register Command Handlers
-        app.add_handler(CommandHandler("start", lambda u, c: send_response(u, c, handle_start)))
-        app.add_handler(CommandHandler("help", lambda u, c: send_response(u, c, handle_help)))
-        app.add_handler(CommandHandler("health", lambda u, c: send_response(u, c, handle_health)))
-        app.add_handler(CommandHandler("scores", lambda u, c: send_response(u, c, handle_scores)))
+        # Register proper async handlers
+        app.add_handler(CommandHandler("start", handle_start_command))
+        app.add_handler(CommandHandler("help", handle_help_command))
+        app.add_handler(CommandHandler("health", handle_health_command))
+        app.add_handler(CommandHandler("scores", handle_scores_command))
         
         # Natural language fallback
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, lambda u, c: send_response(u, c, handle_natural_language)))
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_natural_language_command))
         
         logger.info("Starting bot polling...")
         app.run_polling(allowed_updates=Update.ALL_TYPES)
         
-    except ImportError:
-        logger.error("telegram library not found. Run 'uv sync'")
+    except ImportError as e:
+        logger.error(f"telegram library not found. Run 'uv sync'. Error: {e}")
         sys.exit(1)
     except Exception as e:
         logger.error(f"Bot crashed: {e}")
         sys.exit(1)
-
-async def send_response(update, context, handler_func):
-    """Helper to bridge handlers and Telegram."""
-    text = update.message.text if update.message else ""
-    try:
-        response = handler_func(text)
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
-    except Exception as e:
-        logger.error(f"Error sending message: {e}")
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="An error occurred processing your request.")
 
 def main():
     parser = argparse.ArgumentParser(description="SE Toolkit Bot")
