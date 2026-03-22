@@ -25,7 +25,7 @@ def handle_health(user_input: str = "") -> str:
     
     if is_healthy:
         return (
-            "✅ " + message + "\n\n"
+            f"✅ Backend health: OK. {message}\n\n"
             "🔗 Backend: Connected\n"
             "📊 Database: Available\n"
             "🤖 LLM Service: Ready\n\n"
