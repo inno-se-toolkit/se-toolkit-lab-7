@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """LMS Telegram Bot — Entry point.
 
 Supports two modes:
