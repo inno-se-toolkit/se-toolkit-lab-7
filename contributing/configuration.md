@@ -47,9 +47,7 @@ Create the following directory and file layout. Items marked *(conditional)* are
 ```text
 <repo-root>/
 ├── README.md                          # Main entry point
-├── AGENTS.md                          # Agent/AI coding assistant configuration (canonical)
-├── CLAUDE.md -> AGENTS.md             # Symlink (Claude)
-├── QWEN.md -> AGENTS.md               # Symlink (Qwen)
+├── AGENTS.md                          # Canonical assistant configuration
 ├── index.md                           # Repository index
 ├── LICENSE                            # License file
 ├── lab/
@@ -95,10 +93,8 @@ Create the following directory and file layout. Items marked *(conditional)* are
 │   ├── meetings/                      # Lab meeting notes and transcripts
 │   ├── file-reviews/                  # Review findings for lab files
 │   └── scripts/                       # Utility scripts
-├── .agents/                           # Agent skill definitions (canonical)
+├── .agents/                           # Assistant skill definitions (canonical)
 │   └── skills/                        # One subdirectory per skill
-├── .claude -> .agents                 # Symlink (Claude)
-├── .qwen -> .agents                   # Symlink (Qwen)
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── 01-task.yml                # Lab Task issue form
@@ -183,8 +179,8 @@ All items in this category are conditional — include only when the lab involve
 
 ### 2.7. Agent configuration
 
-- [`AGENTS.md`](../AGENTS.md) — Canonical agent instructions. Points agents to the correct convention files for each part of the repository. [`CLAUDE.md`](../CLAUDE.md) and [`QWEN.md`](../QWEN.md) are symlinks to this file. See [Agent configuration](#9-agent-configuration-agentsmd).
-- [`.agents/skills/`](../.agents/skills/) — Skill definitions (one subdirectory per skill, each with a `SKILL.md`). [`.claude/`](../.claude/) and [`.qwen/`](../.qwen/) are symlinks to [`.agents/`](../.agents/).
+- [`AGENTS.md`](../AGENTS.md) — Canonical assistant instructions. Points tools to the correct convention files for each part of the repository. See [Assistant configuration](#9-assistant-configuration-agentsmd).
+- [`.agents/skills/`](../.agents/skills/) — Skill definitions (one subdirectory per skill, each with a `SKILL.md`).
 - `.agents/settings.local.json` — Permission allowlist for agent tools. Machine-specific, not committed to version control.
 
 ### 2.8. Other
@@ -199,7 +195,6 @@ All items in this category are conditional — include only when the lab involve
 
 Several artifacts must stay in sync when changes are made:
 
-- **Agent symlinks:** [`CLAUDE.md`](../CLAUDE.md) and [`QWEN.md`](../QWEN.md) must remain symlinks to [`AGENTS.md`](../AGENTS.md). [`.claude/`](../.claude/) and [`.qwen/`](../.qwen/) must remain symlinks to [`.agents/`](../.agents/). Never edit the symlinks directly — edit the canonical files.
 - **Dependencies and lock files:** When adding or removing a dependency in the package manager config, regenerate the lock file and commit both together. See [Lock files](#32-lock-files).
 - **Environment templates:** When the application reads a new environment variable, add it to all relevant `.env.*.example` files. Update [`docker-compose.yml`](../docker-compose.yml) if the variable is used in container configuration.
 - **Repository structure diagram:** When adding a new top-level directory or file, update the tree in [Repository structure](#1-repository-structure).
@@ -370,15 +365,13 @@ If the lab involves deployment:
 
 ## 9. Agent configuration ([`AGENTS.md`](../AGENTS.md))
 
-The repository uses a single canonical agent configuration file that all AI coding assistants read.
+The repository uses a single canonical assistant configuration file that all supported tools read.
 
 ### 9.1. File layout
 
 ```text
 <repo-root>/
 ├── AGENTS.md                  # Canonical agent configuration (edit this file)
-├── CLAUDE.md -> AGENTS.md     # Symlink — Claude reads this
-├── QWEN.md -> AGENTS.md       # Symlink — Qwen reads this
 └── .agents/
     ├── settings.local.json    # Agent tool-permission settings (not committed)
     └── skills/
@@ -386,30 +379,23 @@ The repository uses a single canonical agent configuration file that all AI codi
             └── SKILL.md       # One skill per subdirectory
 ```
 
-Agent tool directories ([`.claude/`](../.claude/), [`.qwen/`](../.qwen/)) are symlinks to [`.agents/`](../.agents/) so all agents share the same skill definitions.
+Agent tool directories are symlinks to [`.agents/`](../.agents/) so all tools share the same skill definitions.
 
 ### 9.2. [`AGENTS.md`](../AGENTS.md) structure
 
-[`AGENTS.md`](../AGENTS.md) is the single source of truth for agent instructions. Structure it with:
+[`AGENTS.md`](../AGENTS.md) is the single source of truth for assistant instructions. Structure it with:
 
 - `##` sections keyed to the action (e.g., `When editing X`).
 - Each section lists the relevant convention files to read before making changes.
-- [`CLAUDE.md`](../CLAUDE.md) and [`QWEN.md`](../QWEN.md) are symlinks — never edit them directly; edit [`AGENTS.md`](../AGENTS.md).
+- Keep the canonical file as [`AGENTS.md`](../AGENTS.md) and edit that file directly.
 
 ### 9.3. Creating symlinks
-
-```bash
-ln -s AGENTS.md CLAUDE.md
-ln -s AGENTS.md QWEN.md
-ln -s .agents .claude
-ln -s .agents .qwen
-```
 
 ---
 
 ## 10. Checklist before publishing
 
-- [ ] [`AGENTS.md`](../AGENTS.md) exists at repo root with [`CLAUDE.md`](../CLAUDE.md) and [`QWEN.md`](../QWEN.md) as symlinks to it.
+- [ ] [`AGENTS.md`](../AGENTS.md) exists at repo root and is the canonical assistant configuration.
 - [ ] All cross-references use relative paths and are valid.
 - [ ] Issue templates ([`01-task.yml`](../.github/ISSUE_TEMPLATE/01-task.yml), [`02-bug-report.yml`](../.github/ISSUE_TEMPLATE/02-bug-report.yml)) are configured.
 - [ ] PR template has a checklist.

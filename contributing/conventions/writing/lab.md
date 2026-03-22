@@ -43,17 +43,17 @@ Structure the `README.md` exactly as follows:
 
 Read the tasks and complete them by yourself.
 
-When stuck or not sure, ask an LLM:
+When stuck or not sure, ask a teammate or check the relevant docs:
 
 > Give me directions on how to solve this task. I want to maximize learning.
 
 > Why is this task important? What exactly do I need to do?
 
-Provide enough context by giving it the whole file, not one or two lines.
+Provide enough context by giving the helper the whole file, not one or two lines.
 
-Remember: Use the LLM to enhance your understanding, not replace it.
+Remember: Use the helper to enhance your understanding, not replace your own reading.
 
-Evaluate LLM answers critically, and verify them against credible sources such as official documentation, course materials, and what you observe in reality.
+Evaluate answers critically, and verify them against credible sources such as official documentation, course materials, and what you observe in reality.
 
 ## Learning outcomes
 
@@ -219,5 +219,5 @@ Name tables according to their role in the schema:
 - [ ] At least one test intentionally fails for the debugging task (if the lab has a testing/debugging task).
 - [ ] Seed project has three tiers: reference (working), debug (commented out with bugs), implement (placeholder templates) (if the lab uses the seed project pattern).
 - [ ] Placeholder templates include `# Reference:` comments mapping new resources to reference counterparts (if the lab uses placeholder-based implementation).
-- [ ] All tasks are completable without LLMs.
+- [ ] All tasks are completable without external help.
 - [ ] API key or auth mechanism is set via environment variable and encountered naturally during exploration (if the lab includes security).

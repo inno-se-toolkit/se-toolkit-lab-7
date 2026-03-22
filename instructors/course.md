@@ -32,7 +32,7 @@ Each lab is 3 hours long.
 
 The course offers:
 
-- A solid working setup for a web development project using AI agents and agent skills.
+- A solid working setup for a web development project using the repository's shared tools and workflows.
 - A wiki that:
   - connects the dots between many software engineering concepts.
   - can be a reliable source of truth for generating instructions for tasks.

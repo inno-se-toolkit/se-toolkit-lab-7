@@ -16,14 +16,14 @@ The bot has been running on your VM as a background process (`nohup`). That work
 Installs dependencies using `uv sync` from `bot/pyproject.toml` and runs the bot entry point.
 
 > [!IMPORTANT]
-> Do **not** use `requirements.txt` or `pip install`. The project uses `uv` and `pyproject.toml` exclusively. Having both `pyproject.toml` and `requirements.txt` leads to dependency drift and random breakage. If your coding agent generates a `requirements.txt`, delete it.
+> Do **not** use `requirements.txt` or `pip install`. The project uses `uv` and `pyproject.toml` exclusively. Having both `pyproject.toml` and `requirements.txt` leads to dependency drift and random breakage. If your code generator creates a `requirements.txt`, delete it.
 
 ### 2. Bot service in `docker-compose.yml`
 
 Add a `bot` service to the existing compose file:
 
 - Connects to backend via Docker network (service name, not `localhost`)
-- Reads `BOT_TOKEN` and LLM credentials from environment
+- Reads `BOT_TOKEN`, `LMS_API_BASE_URL`, and `LMS_API_KEY` from environment
 - Restarts unless stopped
 
 > [!IMPORTANT]
@@ -74,8 +74,8 @@ Send these in Telegram — everything that worked before should still work:
 
 1. `/start` — welcome message
 2. `/health` — backend status
-3. "what labs are available?" — natural language, LLM-powered
-4. "which lab has the lowest pass rate?" — multi-step reasoning
+3. `/labs` — list of labs
+4. `/scores lab-04` — per-task pass rates
 
 ### Common Docker problems
 
@@ -83,7 +83,6 @@ Send these in Telegram — everything that worked before should still work:
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Bot container keeps restarting     | Check logs: `docker compose logs bot`. Usually a missing env var or import error.                                             |
 | `/health` fails but worked before  | `LMS_API_BASE_URL` must be `http://backend:8000` (not `localhost:42002`). Inside Docker, `localhost` is the container itself. |
-| LLM queries fail but worked before | `LLM_API_BASE_URL` must use `host.docker.internal` (not `localhost`). The qwen proxy is on a different Docker network.        |
 | "BOT_TOKEN is required" error      | Bot env vars need to be in `.env.docker.secret`, not just `.env.bot.secret`.                                                  |
 | Build fails at `uv sync --frozen`  | `uv.lock` must be copied in the Dockerfile. Check your `COPY` commands.                                                       |
 

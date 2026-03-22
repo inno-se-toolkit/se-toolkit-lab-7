@@ -28,12 +28,10 @@
   - [1.10. Set up `Node.js`](#110-set-up-nodejs)
     - [1.10.1. Install `Node.js` (LOCAL)](#1101-install-nodejs-local)
     - [1.10.2. (UPD) Install `pnpm` (LOCAL)](#1102-upd-install-pnpm-local)
-  - [1.11. (UPD) Set up `Qwen Code` (LOCAL)](#111-upd-set-up-qwen-code-local)
-  - [1.12. (UPD) Deploy the LMS API (REMOTE)](#112-upd-deploy-the-lms-api-remote)
-  - [1.13. (UPD) Set up the `Qwen Code` API (REMOTE)](#113-upd-set-up-the-qwen-code-api-remote)
-  - [1.14. Set up the `Telegram` bot](#114-set-up-the-telegram-bot)
-  - [1.15. Set up the `Autochecker` bot](#115-set-up-the-autochecker-bot)
-  - [1.16. Check the setup using the `Autochecker` bot](#116-check-the-setup-using-the-autochecker-bot)
+  - [1.11. Deploy the LMS API (REMOTE)](#111-deploy-the-lms-api-remote)
+  - [1.12. Set up the `Telegram` bot](#112-set-up-the-telegram-bot)
+  - [1.13. Set up the `Autochecker` bot](#113-set-up-the-autochecker-bot)
+  - [1.14. Check the setup using the `Autochecker` bot](#114-check-the-setup-using-the-autochecker-bot)
 - [2. Optional steps](#2-optional-steps)
   - [2.1. (UPD) Set up `gh` (LOCAL)](#21-upd-set-up-gh-local)
   - [2.2. Set up `Nix` (LOCAL)](#22-set-up-nix-local)
@@ -251,37 +249,21 @@ See [tools](../../wiki/software-types.md#tool).
 
 1. [Install `pnpm`](../../wiki/nodejs.md#install-pnpm).
 
-### 1.11. (UPD) Set up `Qwen Code` (LOCAL)
-
-[`Qwen Code`](../../wiki/qwen-code.md#what-is-qwen-code) is a [coding agent](../../wiki/coding-agents.md#what-is-a-coding-agent) that can answer questions about the repository and help you complete the lab tasks.
-
-<div style="display:flex;flex-wrap:wrap;gap:10px">
-  <img alt="Qwen request" src="../images/tasks/setup/qwen-request.png" style="width:300px"></img>
-  <img alt="Qwen response" src="../images/tasks/setup/qwen-response.png" style="width:300px"></img>
-</div>
-
-1. [Set up `Qwen Code`](../../wiki/qwen-code.md#set-up-qwen-code-local).
-
-### 1.12. (UPD) Deploy the LMS API (REMOTE)
+### 1.11. Deploy the LMS API (REMOTE)
 
 1. [Deploy the LMS API on your VM](../../wiki/lms-api-deployment.md#deploy-the-lms-api-on-the-vm).
 
-### 1.13. (UPD) Set up the `Qwen Code` API (REMOTE)
-
-1. [Set up the `Qwen Code` API on your VM](../../wiki/qwen-code-api-deployment.md#deploy-the-qwen-code-api-remote).
-2. [Check that the `Qwen Code` API is accessible on your local machine (LOCAL)](../../wiki/qwen-code-api.md#check-that-the-qwen-code-api-is-accessible).
-
-### 1.14. Set up the `Telegram` bot
+### 1.12. Set up the `Telegram` bot
 
 1. [Create a `Telegram` bot](../../wiki/bot.md#create-a-telegram-bot).
 2. [Configure the environment for the bot on your VM (REMOTE)](../../wiki/bot.md#configure-the-environment-remote).
 3. [Install `uv` (REMOTE)](../../wiki/python.md#install-uv).
 
-### 1.15. Set up the `Autochecker` bot
+### 1.13. Set up the `Autochecker` bot
 
 1. [Set up the `Autochecker` bot](../../wiki/autochecker.md#set-up-the-autochecker-bot)
 
-### 1.16. Check the setup using the `Autochecker` bot
+### 1.14. Check the setup using the `Autochecker` bot
 
 1. [Check the `Setup` task](../../wiki/autochecker.md#check-the-task-using-the-autochecker-bot).
 

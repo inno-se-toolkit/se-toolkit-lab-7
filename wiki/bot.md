@@ -103,9 +103,6 @@ The [username](#bot-username) of your bot.
    - [`BOT_TOKEN`](./dotenv-bot-secret.md#bot_token)
    - [`LMS_API_BASE_URL`](./dotenv-bot-secret.md#LMS_API_BASE_URL)
    - [`LMS_API_KEY`](./dotenv-bot-secret.md#lms_api_key)
-   - [`LLM_API_KEY`](./dotenv-bot-secret.md#llm_api_key)
-   - [`LLM_API_BASE_URL`](./dotenv-bot-secret.md#llm_api_base_url)
-   - [`LLM_API_MODEL`](./dotenv-bot-secret.md#llm_api_model)
 
 3. Save and close the file.
 
