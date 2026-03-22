@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lms-bot"
 version = "0.1.0"
-description = "LMS Telegram Bot"
+description = "Telegram bot scaffold with test mode"
 requires-python = ">=3.11"
 dependencies = [
     "python-dotenv>=1.0.0",
@@ -13,9 +13,6 @@ dependencies = [
     "httpx>=0.28.1",
 ]
 
-[tool.setuptools]
-packages = ["handlers", "services"]
-
-[tool.setuptools.package-data]
-handlers = ["py.typed"]
-services = ["py.typed"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["handlers*", "services*"]
