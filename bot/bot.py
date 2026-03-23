@@ -13,6 +13,8 @@ import argparse
 import logging
 import sys
 import aiohttp
+from aiohttp import TCPConnector
+from aiohttp.connector import AddressFamily
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.session.aiohttp import AiohttpSession
