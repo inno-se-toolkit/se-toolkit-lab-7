@@ -10,7 +10,7 @@ from typing import Optional
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from aiogram.types import Message, BotCommand, DefaultBotProperties
+from aiogram.types import Message, BotCommand
 from aiogram.enums import ParseMode
 
 try:
@@ -79,7 +79,7 @@ async def run_telegram_bot():
 
     bot = Bot(
         token=settings.bot_token,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        parse_mode=ParseMode.HTML
     )
     dp = Dispatcher()
 

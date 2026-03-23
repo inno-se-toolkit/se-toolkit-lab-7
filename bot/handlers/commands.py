@@ -1,4 +1,10 @@
-"""Start command handler."""
+"""Command handlers for the LMS Telegram bot."""
+
+from handlers.data.lms_queries import (
+    check_health,
+    handle_labs as handle_labs_impl,
+    handle_scores as handle_scores_impl,
+)
 
 
 def handle_start() -> str:
@@ -7,7 +13,7 @@ def handle_start() -> str:
 
 I can help you with:
 • /help - Show all available commands
-• /health - Check system status
+• /health - Check backend status
 • /labs - List available labs
 • /scores <lab> - Get scores for a lab
 
@@ -37,17 +43,28 @@ Send any command to get started!"""
 
 
 def handle_health() -> str:
-    """Handle /health command."""
-    return "✅ Bot is running and ready to help!"
+    """Handle /health command.
+
+    Queries the LMS backend to check if it's healthy.
+    """
+    is_healthy, message = check_health()
+    if is_healthy:
+        return f"✅ {message}"
+    return f"❌ {message}"
 
 
 def handle_labs() -> str:
-    """Handle /labs command."""
-    return "📚 Available labs will be listed here (implemented in Task 2)"
+    """Handle /labs command.
+
+    Fetches list of available labs from the LMS API.
+    """
+    return handle_labs_impl()
 
 
 def handle_scores(lab: str = "") -> str:
-    """Handle /scores command."""
-    if not lab:
-        return "❌ Please specify a lab: /scores <lab-name>"
-    return f"📊 Scores for {lab} will be shown here (implemented in Task 2)"
+    """Handle /scores command.
+
+    Args:
+        lab: Lab identifier to get scores for.
+    """
+    return handle_scores_impl(lab)
