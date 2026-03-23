@@ -14,12 +14,15 @@ ENV UV_COMPILE_BYTECODE=1
 
 # Copy package requirements.
 COPY pyproject.toml uv.lock ./
+COPY bot/pyproject.toml bot/pyproject.toml
 
-# Install dependencies in a frozen state so it strictly matches uv.lock
-RUN uv sync --frozen --no-dev
+# Install dependencies in a frozen state
+RUN uv sync --frozen --no-dev --package bot --no-install-project
 
 # Copy the actual code.
-COPY . .
+COPY bot /app/bot
+
+RUN uv sync --frozen --no-dev --package bot
 
 # Run the bot entry point
-CMD ["uv", "run", "bot.py"]
+CMD ["uv", "run", "python", "bot/bot.py"]
