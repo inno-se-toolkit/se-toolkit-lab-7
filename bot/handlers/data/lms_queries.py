@@ -104,15 +104,15 @@ def handle_labs() -> str:
         item_type = item.get("type", "")
         if item_type == "lab":
             lab_id = item.get("id", "unknown")
-            lab_name = item.get("name", item.get("title", "Unknown Lab"))
-            labs[lab_id] = lab_name
+            lab_title = item.get("title", item.get("name", "Unknown Lab"))
+            labs[lab_id] = lab_title
 
     if not labs:
         return "📚 No labs found in the system."
 
     result = "📚 Available labs:\n"
-    for lab_id, lab_name in sorted(labs.items()):
-        result += f"- {lab_id} — {lab_name}\n"
+    for lab_id, lab_title in sorted(labs.items()):
+        result += f"- Lab {lab_id:02d}: {lab_title}\n"
 
     return result.strip()
 
@@ -139,7 +139,7 @@ def handle_scores(lab: str = "") -> str:
         return f"❌ No scores data available for '{lab}' or backend returned empty response."
 
     # Parse pass rates data
-    # Expected format: [{"task": "Task Name", "pass_rate": 0.75, "attempts": 100}, ...]
+    # Expected format: [{"task": "Task Name", "avg_score": 75.5, "attempts": 100}, ...]
     if isinstance(data, list):
         pass_rates = data
     else:
@@ -148,14 +148,17 @@ def handle_scores(lab: str = "") -> str:
     if not pass_rates:
         return f"📊 No pass rate data available for '{lab}'."
 
-    result = f"📊 Pass rates for {lab.replace('-', ' ').title()}:\n"
+    # Extract lab number for display
+    lab_num = lab.replace("lab-", "Lab ")
+    result = f"📊 Pass rates for {lab_num}:\n"
     for rate in pass_rates:
         task_name = rate.get("task", rate.get("task_name", "Unknown Task"))
-        pass_rate = rate.get("pass_rate", 0)
+        # Use avg_score if pass_rate not available
+        score = rate.get("pass_rate", rate.get("avg_score", 0))
         attempts = rate.get("attempts", 0)
 
-        # Convert to percentage
-        percentage = pass_rate * 100 if pass_rate <= 1 else pass_rate
+        # Format percentage
+        percentage = score if score > 1 else score * 100
         result += f"- {task_name}: {percentage:.1f}% ({attempts} attempts)\n"
 
     return result.strip()
