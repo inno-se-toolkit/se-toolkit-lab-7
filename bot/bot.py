@@ -12,9 +12,8 @@ Usage:
 import argparse
 import logging
 import sys
+import socket
 import aiohttp
-from aiohttp import TCPConnector
-from aiohttp.connector import AddressFamily
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -124,7 +123,7 @@ def run_telegram_mode() -> None:
         sys.exit(1)
 
     # Force IPv4 only (fix for systems without global IPv6 connectivity)
-    connector = aiohttp.TCPConnector(family=aiohttp.AddressFamily.AF_INET)
+    connector = aiohttp.TCPConnector(family=socket.AF_INET)
     session = AiohttpSession(connector=connector)
     bot = Bot(token=settings.bot_token, session=session)
     
@@ -142,7 +141,6 @@ def run_telegram_mode() -> None:
 
     logger.info("Starting Telegram bot...")
     dp.run_polling(bot)
-
 
 def main() -> None:
     """Main entry point."""
