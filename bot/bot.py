@@ -121,12 +121,10 @@ def run_telegram_mode() -> None:
 
     import asyncio
     from aiogram.client.session.aiohttp import AiohttpSession
-    import aiohttp
 
     async def poll_bot():
-        # Configure session with longer timeout
-        timeout = aiohttp.ClientTimeout(total=30, connect=10)
-        session = AiohttpSession(timeout=timeout)
+        # Use simple timeout (aiogram expects float, not ClientTimeout object)
+        session = AiohttpSession(timeout=30.0)
         bot = Bot(token=settings.bot_token, session=session)
 
         dp = Dispatcher()
