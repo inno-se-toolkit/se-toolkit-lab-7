@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Telegram bot entry point with --test mode support."""
-
+import httpx
 import sys
 import asyncio
 import argparse
