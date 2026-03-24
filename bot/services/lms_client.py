@@ -15,29 +15,24 @@ class LMSClient:
         """Get all items (labs and tasks)."""
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
-                f"{self.base_url}/items/",  # Добавлен слеш в конце
+                f"{self.base_url}/items/",
                 headers=self.headers,
                 timeout=10.0
             )
             response.raise_for_status()
             data = response.json()
-            # Если данные пришли как список, возвращаем как есть
             if isinstance(data, list):
                 return data
-            # Если как словарь с ключом 'items'
             return data.get('items', [])
     
     async def get_labs(self) -> List[Dict[str, Any]]:
         """Get only labs (items with type 'lab')."""
         items = await self.get_items()
-        # Фильтруем лабы - проверяем разные возможные поля
         labs = []
         for item in items:
-            # Проверяем наличие поля type или lab_id
             item_type = item.get('type') or item.get('item_type') or item.get('category')
             if item_type and 'lab' in str(item_type).lower():
                 labs.append(item)
-            # Также проверяем, если есть поле 'lab_name' или 'name'
             elif 'lab' in str(item.get('name', '')).lower():
                 labs.append(item)
         return labs
@@ -53,7 +48,6 @@ class LMSClient:
             )
             response.raise_for_status()
             data = response.json()
-            # Если данные пришли как список, преобразуем в нужный формат
             if isinstance(data, list):
                 return {"tasks": data}
             return data
@@ -71,3 +65,85 @@ class LMSClient:
             return False, f"HTTP {e.response.status_code}: {e.response.text[:100]}", 0
         except Exception as e:
             return False, f"Error: {str(e)}", 0
+    
+    async def get_learners(self) -> List[Dict[str, Any]]:
+        """Get enrolled learners."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{self.base_url}/learners/",
+                headers=self.headers,
+                timeout=10.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def get_scores(self, lab: str) -> Dict[str, Any]:
+        """Get score distribution for a lab."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/scores",
+                params={"lab": lab},
+                headers=self.headers,
+                timeout=10.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def get_timeline(self, lab: str) -> Dict[str, Any]:
+        """Get submission timeline for a lab."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/timeline",
+                params={"lab": lab},
+                headers=self.headers,
+                timeout=10.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def get_groups(self, lab: str) -> Dict[str, Any]:
+        """Get per-group performance for a lab."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/groups",
+                params={"lab": lab},
+                headers=self.headers,
+                timeout=10.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def get_top_learners(self, lab: str, limit: int = 5) -> Dict[str, Any]:
+        """Get top learners for a lab."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/top-learners",
+                params={"lab": lab, "limit": limit},
+                headers=self.headers,
+                timeout=10.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def get_completion_rate(self, lab: str) -> Dict[str, Any]:
+        """Get completion rate for a lab."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/completion-rate",
+                params={"lab": lab},
+                headers=self.headers,
+                timeout=10.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def trigger_sync(self) -> Dict[str, Any]:
+        """Trigger ETL sync."""
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.post(
+                f"{self.base_url}/pipeline/sync",
+                headers=self.headers,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
