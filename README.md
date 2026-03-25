@@ -95,3 +95,31 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+## Deploy
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Git
+- Qwen Code API proxy running on host (for LLM features)
+
+### Environment Variables
+
+Create `.env.docker.secret` file with the following variables:
+
+```bash
+# Backend configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=lms
+BACKEND_HOST_ADDRESS=0.0.0.0
+
+# API Keys
+AUTOCHECKER_API_LOGIN=your_email@innopolis.university
+AUTOCHECKER_API_PASSWORD=your_github_usernameyour_telegram_alias
+LMS_API_KEY=your-lms-api-key
+
+# Bot configuration
+BOT_TOKEN=your-telegram-bot-token
+LLM_API_KEY=my-secret-qwen-key
+LLM_API_BASE_URL=http://host.docker.internal:42005/v1
+LLM_API_MODEL=coder-model

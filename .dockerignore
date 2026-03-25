@@ -1,26 +1,43 @@
-.DS_Store
+# Python
 __pycache__/
 *.pyc
-.pytest_cache/
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
 *.egg-info/
-venv/
-.venv/
+dist/
+build/
 
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+bot.log
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
 .dockerignore
 
-.gitignore
-.git/
+# Environment files
+.env.*.secret
+!.env.docker.secret
 
-.github/
-
-.vscode/
-
-.env
-
-tests/
-docs/
-
-docker-compose.yml
-Dockerfile
-
+# Documentation
+README.md
 *.md
