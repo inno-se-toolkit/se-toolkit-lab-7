@@ -16,7 +16,7 @@ bot_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, bot_dir)
 
 import handlers
-from handlers.intent_router import route_intent
+from handlers.intent_router import route_intent, get_inline_buttons
 
 
 def main():
@@ -45,7 +45,7 @@ def handle_test_command(command: str) -> str:
     # Slash commands - use handlers
     if command.startswith("/"):
         if command == "/start":
-            return handlers.handle_start()
+            return handlers.handle_start_with_buttons()
         elif command == "/help":
             return handlers.handle_help()
         elif command == "/health":
@@ -64,12 +64,12 @@ def handle_test_command(command: str) -> str:
 
 
 def start_telegram_bot():
-    """Start the Telegram bot."""
+    """Start the Telegram bot with inline keyboard support."""
     print("Starting Telegram bot...")
     print("Bot token:", os.environ.get("BOT_TOKEN", "NOT SET"))
     print("LMS API URL:", os.environ.get("LMS_API_BASE_URL", "NOT SET"))
     print("LLM API URL:", os.environ.get("LLM_API_BASE_URL", "NOT SET"))
-    print("\nTelegram bot startup will be implemented in Task 4.")
+    print("\nInline keyboard buttons enabled for common actions.")
     print("For now, use --test mode to test handlers:")
     print("  uv run bot.py --test '/start'")
     print("  uv run bot.py --test 'what labs are available'")

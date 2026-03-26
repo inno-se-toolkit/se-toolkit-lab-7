@@ -42,6 +42,26 @@ def handle_start() -> str:
     )
 
 
+def handle_start_with_buttons() -> str:
+    """
+    Handle /start command with inline keyboard buttons.
+    
+    Returns:
+        Welcome message with button hints
+    """
+    from handlers.intent_router import get_inline_buttons
+    
+    buttons = get_inline_buttons()
+    button_text = "\n".join([f"  [{b['text']}]" for b in buttons])
+    
+    return (
+        "👋 Welcome to the LMS Bot!\n\n"
+        "I can help you interact with the Learning Management System.\n\n"
+        "Quick actions:\n" + button_text + "\n\n"
+        "Or ask me anything in plain language!"
+    )
+
+
 def handle_help() -> str:
     """
     Handle /help command.

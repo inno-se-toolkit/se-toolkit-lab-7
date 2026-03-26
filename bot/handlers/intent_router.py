@@ -2,12 +2,12 @@
 Intent Router for natural language queries.
 
 Uses LLM to route user messages to appropriate tools.
+NO regex/keyword matching in the routing path - LLM decides.
 """
 
 import sys
 import json
 from services.llm_client import LLMClient, get_tool_definitions
-from services.api_client import APIClient
 
 
 # System prompt for the LLM
@@ -21,14 +21,14 @@ When a user asks a question:
 
 Available tools:
 - get_items: List all labs and tasks
-- get_learners: List all students
-- get_scores: Score distribution for a lab
-- get_pass_rates: Per-task pass rates for a lab
-- get_timeline: Submissions over time
-- get_groups: Per-group performance
-- get_top_learners: Top students by score
-- get_completion_rate: Completion percentage
-- trigger_sync: Refresh data
+- get_learners: List all students and enrollment data
+- get_scores: Score distribution (4 buckets) for a lab
+- get_pass_rates: Per-task average scores and attempt counts for a lab
+- get_timeline: Submissions per day for a lab
+- get_groups: Per-group average scores and student counts
+- get_top_learners: Top N learners by average score
+- get_completion_rate: Completion rate percentage
+- trigger_sync: Refresh data from autochecker
 
 For multi-step questions (e.g., "which lab has the lowest pass rate"):
 1. First call get_items to get all labs
@@ -37,6 +37,7 @@ For multi-step questions (e.g., "which lab has the lowest pass rate"):
 
 If the user's message is unclear or gibberish, politely ask for clarification.
 If greeted, respond warmly and mention what you can help with.
+Always call tools to get real data before answering questions about labs, students, or scores.
 """
 
 
@@ -63,86 +64,21 @@ def route_intent(user_message: str) -> str:
     try:
         response = llm.chat_with_tools(messages, tools)
         
-        # Check if LLM returned an error
-        if response.startswith("LLM error"):
-            print(f"[fallback] LLM failed, using rule-based routing", file=sys.stderr)
-            return fallback_routing(user_message)
-        
         print(f"[response] {response[:100]}...", file=sys.stderr)
         return response
     except Exception as e:
         print(f"[error] {e}", file=sys.stderr)
-        return fallback_routing(user_message)
+        return f"Error processing request: {str(e)}"
 
 
-def fallback_routing(user_message: str) -> str:
+def get_inline_buttons() -> list:
     """
-    Fallback routing when LLM is unavailable.
-    Uses simple keyword matching.
-    
-    Args:
-        user_message: The user's input text
-    
-    Returns:
-        Response text
+    Get inline keyboard buttons for common actions.
+    Returns list of button configurations.
     """
-    message_lower = user_message.lower()
-    api = APIClient()
-    
-    # Keyword-based routing
-    try:
-        if any(word in message_lower for word in ["lab", "labs", "available", "list"]):
-            items = api.get_items()
-            labs = [item for item in items if item.get("type") == "lab"]
-            result = "📋 Available Labs:\n\n"
-            for lab in labs:
-                result += f"• {lab.get('title', 'Unknown')}\n"
-            return result
-        
-        elif "score" in message_lower:
-            # Extract lab number
-            import re
-            match = re.search(r'lab[- ]?(\d+)', message_lower)
-            if match:
-                lab_num = match.group(1).zfill(2)
-                lab_id = f"lab-{lab_num}"
-                return handlers.handle_scores(lab_id)
-            return "Please specify a lab. Example: 'show scores for lab 4'"
-        
-        elif any(word in message_lower for word in ["top", "best", "student", "learner"]):
-            # Get top learners for a default lab
-            lab_num = "04"
-            match = re.search(r'lab[- ]?(\d+)', message_lower)
-            if match:
-                lab_num = match.group(1).zfill(2)
-            lab_id = f"lab-{lab_num}"
-            top = api.get_top_learners(lab_id, limit=5)
-            result = f"🏆 Top 5 Learners in Lab {lab_num}:\n\n"
-            for i, learner in enumerate(top, 1):
-                result += f"{i}. Avg: {learner.get('avg_score', 0)}% | Attempts: {learner.get('attempts', 0)}\n"
-            return result
-        
-        elif any(word in message_lower for word in ["group", "groups"]):
-            lab_num = "04"
-            match = re.search(r'lab[- ]?(\d+)', message_lower)
-            if match:
-                lab_num = match.group(1).zfill(2)
-            lab_id = f"lab-{lab_num}"
-            groups = api.get_groups(lab_id)
-            result = f"👥 Groups in Lab {lab_num}:\n\n"
-            for group in groups:
-                result += f"• {group.get('group', 'Unknown')}: Avg {group.get('avg_score', 0)}% ({group.get('students', 0)} students)\n"
-            return result
-        
-        elif any(word in message_lower for word in ["hello", "hi", "hey", "greet"]):
-            return "👋 Hello! I'm the LMS Bot. I can help you with:\n- Listing labs\n- Showing scores\n- Top learners\n- Group performance\n\nJust ask!"
-        
-        else:
-            return "I'm not sure what you're asking. Try:\n- 'what labs are available?'\n- 'show scores for lab 4'\n- 'who are the top students?'"
-    
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-
-# Import handlers for fallback
-import handlers
+    return [
+        {"text": "📋 List Labs", "callback_data": "list_labs"},
+        {"text": "📊 Lab Scores", "callback_data": "show_scores"},
+        {"text": "🏆 Top Students", "callback_data": "top_students"},
+        {"text": "👥 Groups", "callback_data": "show_groups"},
+    ]
