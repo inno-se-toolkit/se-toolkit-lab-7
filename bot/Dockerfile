@@ -1,15 +1,13 @@
-FROM harbor.pg.innopolis.university/docker-hub-cache/python:3.12-slim
+# Bot Dockerfile - uses pre-cached packages from lab-6 image
+FROM se-toolkit-lab-6-app:latest
 
 WORKDIR /app
 
-# Copy bot
+# Copy bot files
 COPY bot/ ./bot/
-COPY pyproject.toml ./
 
-# Use host DNS
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    pip install --no-cache-dir httpx python-telegram-bot
-
+# Set environment
 ENV PYTHONPATH=/app
 
+# Run the bot
 CMD ["python", "bot/bot.py"]
