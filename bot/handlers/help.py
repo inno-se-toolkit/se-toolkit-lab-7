@@ -7,11 +7,16 @@ def handle_help() -> str:
     Returns:
         List of available commands with descriptions.
     """
-    return (
-        "📚 Available commands:\n\n"
-        "/start - Welcome message\n"
-        "/help - Show this help message\n"
-        "/health - Check backend status\n"
-        "/labs - List available labs\n"
-        "/scores <lab> - View scores for a specific lab"
-    )
+    return """📖 Available commands:
+
+/start — Welcome message
+/help — Show this help message
+/health — Check if the backend is running
+/labs — List all available labs
+/scores <lab> — Show pass rates for a specific lab (e.g., /scores lab-04)
+
+You can also ask questions in plain text, like:
+- "what labs are available?"
+- "show me scores for lab 4"
+- "which lab has the lowest pass rate?"
+"""
