@@ -1,6 +1,9 @@
-FROM astral-sh/uv:python3.12-bookworm
+FROM harbor.pg.innopolis.university/docker-hub-cache/python:3.12-slim
 
 WORKDIR /app
+
+# Install uv
+RUN pip install uv
 
 # Copy bot-specific files
 COPY pyproject.toml uv.lock ./
