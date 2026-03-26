@@ -10,11 +10,12 @@ import sys
 import argparse
 import logging
 
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
     MessageHandler,
+    CallbackQueryHandler,
     filters,
     ContextTypes,
 )
@@ -28,6 +29,7 @@ from handlers import (
     handle_scores,
     handle_general_query,
 )
+from handlers.start import get_start_keyboard
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -84,7 +86,9 @@ async def handle_start_command(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     """Telegram handler for /start command."""
-    await update.message.reply_text(handle_start())
+    response = handle_start()
+    keyboard = get_start_keyboard()
+    await update.message.reply_text(response, reply_markup=keyboard)
 
 
 async def handle_help_command(
@@ -126,6 +130,31 @@ async def handle_message(
         await update.message.reply_text(response)
 
 
+async def handle_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Handle inline keyboard button clicks."""
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data
+
+    if data == "labs":
+        response = handle_labs()
+    elif data == "health":
+        response = handle_health()
+    elif data == "help":
+        response = handle_help()
+    elif data == "scores_help":
+        response = "📊 To see scores, use /scores lab-04 (replace 04 with any lab number)"
+    elif data == "top_lab":
+        response = handle_general_query("which lab has the lowest pass rate?")
+    else:
+        response = "Unknown action."
+
+    await query.edit_message_text(response)
+
+
 def run_telegram_mode(config: dict) -> None:
     """Run the bot in Telegram mode.
     
@@ -147,9 +176,12 @@ def run_telegram_mode(config: dict) -> None:
     application.add_handler(CommandHandler("health", handle_health_command))
     application.add_handler(CommandHandler("labs", handle_labs_command))
     application.add_handler(CommandHandler("scores", handle_scores_command))
-    
+
     # Add message handler for general queries
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    # Add callback query handler for inline buttons
+    application.add_handler(CallbackQueryHandler(handle_callback))
     
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
