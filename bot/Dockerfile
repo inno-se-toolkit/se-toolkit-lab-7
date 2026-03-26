@@ -11,18 +11,18 @@ ENV UV_PYTHON_DOWNLOADS=0
 
 WORKDIR /app
 
-# Copy root project files for dependency resolution
+# Copy root workspace files (includes bot as workspace member)
 COPY pyproject.toml uv.lock ./
-
-# Copy bot pyproject.toml for reference
 COPY bot/pyproject.toml ./bot/
+COPY backend/pyproject.toml ./backend/
 
-# Sync dependencies (includes bot dependencies from root pyproject.toml)
+# Sync all workspace dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked
 
-# Copy bot source code
+# Copy all source code
 COPY bot/ ./bot/
+COPY backend/ ./backend/
 
 # ---
 # Stage 2: runtime image
