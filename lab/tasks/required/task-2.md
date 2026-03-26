@@ -173,12 +173,12 @@ If a command works in `--test` but not in Telegram, check `bot.log` — it's usu
 
 ### On the VM (REMOTE)
 
-- [ ] `--test "/start"` returns text containing "welcome" or bot name.
-- [ ] `--test "/help"` lists at least 4 `/command` entries.
-- [ ] `--test "/health"` returns a status indicator.
-- [ ] `--test "/labs"` lists at least 2 labs.
-- [ ] `--test "/scores lab-04"` shows task names and scores.
-- [ ] With backend stopped, `--test "/health"` returns a message with the actual error (e.g., "connection refused", "HTTP 502"), no raw `Traceback`.
+- [x] `--test "/start"` returns text containing "welcome" or bot name.
+- [x] `--test "/help"` lists at least 4 `/command` entries.
+- [x] `--test "/health"` returns a status indicator.
+- [x] `--test "/labs"` lists at least 2 labs.
+- [x] `--test "/scores lab-04"` shows task names and scores.
+- [x] With backend stopped, `--test "/health"` returns a message with the actual error (e.g., "connection refused", "HTTP 502"), no raw `Traceback`.
 
 ### In `Telegram`
 
