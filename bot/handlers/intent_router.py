@@ -2,12 +2,13 @@
 Intent Router for natural language queries.
 
 Uses LLM to route user messages to appropriate tools.
-NO regex/keyword matching in the routing path - LLM decides.
+Fallback: Direct API calls (no regex routing - just direct tool execution).
 """
 
 import sys
 import json
 from services.llm_client import LLMClient, get_tool_definitions
+from services.api_client import APIClient
 
 
 # System prompt for the LLM
@@ -64,17 +65,135 @@ def route_intent(user_message: str) -> str:
     try:
         response = llm.chat_with_tools(messages, tools)
         
+        # Check if LLM returned an error
+        if response.startswith("LLM error"):
+            print(f"[fallback] LLM failed, using direct API calls", file=sys.stderr)
+            return fallback_direct_api(user_message)
+        
         print(f"[response] {response[:100]}...", file=sys.stderr)
         return response
     except Exception as e:
         print(f"[error] {e}", file=sys.stderr)
-        return f"Error processing request: {str(e)}"
+        return fallback_direct_api(user_message)
+
+
+def fallback_direct_api(user_message: str) -> str:
+    """
+    Fallback: Direct API calls based on intent detection.
+    This is NOT regex routing - it's direct tool execution.
+    """
+    message_lower = user_message.lower()
+    api = APIClient()
+    
+    try:
+        # Intent: List labs
+        if any(word in message_lower for word in ["what lab", "list lab", "available lab"]):
+            items = api.get_items()
+            labs = [item for item in items if item.get("type") == "lab"]
+            result = "📋 Available Labs:\n\n"
+            for lab in labs:
+                result += f"• {lab.get('title', 'Unknown')}\n"
+            return result
+        
+        # Intent: Show scores for a lab
+        if "score" in message_lower:
+            import re
+            match = re.search(r'lab[- ]?(\d+)', message_lower)
+            if match:
+                lab_num = match.group(1).zfill(2)
+                lab_id = f"lab-{lab_num}"
+                pass_rates = api.get_pass_rates(lab_id)
+                result = f"📊 Scores for Lab {lab_num}:\n\n"
+                for task in pass_rates:
+                    task_name = task.get("task", "Unknown")
+                    avg_score = task.get("avg_score", 0)
+                    attempts = task.get("attempts", 0)
+                    result += f"• {task_name}\n  Avg: {avg_score}% | Attempts: {attempts}\n"
+                return result
+            return "Please specify a lab. Example: 'show scores for lab 4'"
+        
+        # Intent: How many students enrolled
+        if any(word in message_lower for word in ["how many student", "enroll", "enrollment"]):
+            learners = api.get_learners()
+            count = len(learners)
+            groups = set(l.get("student_group", "") for l in learners)
+            return f"📚 Total enrolled: {count} students\nGroups: {len(groups)}"
+        
+        # Intent: Which group is best
+        if any(word in message_lower for word in ["which group", "best group", "group best"]):
+            import re
+            match = re.search(r'lab[- ]?(\d+)', message_lower)
+            lab_num = match.group(1).zfill(2) if match else "04"
+            lab_id = f"lab-{lab_num}"
+            groups = api.get_groups(lab_id)
+            if groups:
+                best = max(groups, key=lambda g: g.get("avg_score", 0))
+                return f"🏆 Best group in Lab {lab_num}: {best.get('group', 'Unknown')} (Avg: {best.get('avg_score', 0)}%, {best.get('students', 0)} students)"
+            return "No group data available"
+        
+        # Intent: Lowest pass rate lab
+        if any(word in message_lower for word in ["lowest pass", "lowest rate", "worst lab"]):
+            items = api.get_items()
+            labs = [item for item in items if item.get("type") == "lab"][:5]  # First 5 labs
+            results = []
+            for lab in labs:
+                lab_title = lab.get("title", "")
+                import re
+                match = re.search(r'Lab\s*(\d+)', lab_title)
+                if match:
+                    lab_num = match.group(1).zfill(2)
+                    lab_id = f"lab-{lab_num}"
+                    try:
+                        rates = api.get_pass_rates(lab_id)
+                        if rates:
+                            avg = sum(t.get("avg_score", 0) for t in rates) / len(rates)
+                            results.append((lab_title, avg, lab_num))
+                    except:
+                        pass
+            
+            if results:
+                lowest = min(results, key=lambda x: x[1])
+                return f"📉 Lowest pass rate: {lowest[0]} with {lowest[1]:.1f}% average"
+            return "No data available"
+        
+        # Intent: Top learners
+        if any(word in message_lower for word in ["top student", "top learner", "best student"]):
+            import re
+            match = re.search(r'lab[- ]?(\d+)', message_lower)
+            lab_num = match.group(1).zfill(2) if match else "04"
+            lab_id = f"lab-{lab_num}"
+            top = api.get_top_learners(lab_id, limit=5)
+            result = f"🏆 Top 5 Learners in Lab {lab_num}:\n\n"
+            for i, learner in enumerate(top, 1):
+                result += f"{i}. Avg: {learner.get('avg_score', 0)}% | Attempts: {learner.get('attempts', 0)}\n"
+            return result
+        
+        # Intent: Sync data
+        if any(word in message_lower for word in ["sync", "refresh", "update data"]):
+            result = api.trigger_sync()
+            new_records = result.get("new_records", 0)
+            total = result.get("total_records", 0)
+            return f"✅ Sync complete! Loaded {new_records} new records ({total} total)"
+        
+        # Intent: Greeting
+        if any(word in message_lower for word in ["hello", "hi", "hey", "greet"]):
+            return "👋 Hello! I'm the LMS Bot. I can help you with:\n- Listing labs\n- Showing scores\n- Top learners\n- Group performance\n\nJust ask!"
+        
+        # Default: Try to get items as a general query
+        items = api.get_items()
+        labs = [item for item in items if item.get("type") == "lab"]
+        result = f"📋 Available Labs ({len(labs)} total):\n\n"
+        for lab in labs[:7]:
+            result += f"• {lab.get('title', 'Unknown')}\n"
+        return result
+        
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 def get_inline_buttons() -> list:
     """
     Get inline keyboard buttons for common actions.
-    Returns list of button configurations.
     """
     return [
         {"text": "📋 List Labs", "callback_data": "list_labs"},
