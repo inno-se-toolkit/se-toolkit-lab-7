@@ -6,8 +6,9 @@ WORKDIR /app
 COPY bot/ ./bot/
 COPY pyproject.toml ./
 
-# Install packages directly
-RUN pip install --no-cache-dir httpx python-telegram-bot
+# Use host DNS
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    pip install --no-cache-dir httpx python-telegram-bot
 
 ENV PYTHONPATH=/app
 
