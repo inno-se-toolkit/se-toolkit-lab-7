@@ -5,13 +5,13 @@ def handle_start() -> str:
     """Handle /start command.
 
     Returns:
-        Welcome message with bot capabilities overview.
+        Welcome message with bot name.
     """
-    return (
-        "👋 Welcome to SE Toolkit Bot!\n\n"
-        "I can help you with:\n"
-        "• Viewing your lab scores\n"
-        "• Checking backend health\n"
-        "• Getting help with commands\n\n"
-        "Use /help to see all available commands."
-    )
+    return """👋 Welcome to the LMS Bot!
+
+I can help you check lab status, scores, and more.
+
+Use /help to see available commands, or just ask me a question like:
+- "what labs are available?"
+- "show me scores for lab 4"
+"""
