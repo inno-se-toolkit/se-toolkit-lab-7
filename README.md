@@ -95,3 +95,80 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+### Prerequisites
+
+Before deploying, ensure you have:
+
+1. **Telegram Bot Token**: Get from @BotFather
+2. **LMS API Key**: From `.env.docker.secret`
+3. **LLM API Key**: From Qwen Code proxy setup
+
+### Environment Setup
+
+Create `.env.bot.secret` on the VM with:
+
+```bash
+BOT_TOKEN=<your-telegram-bot-token>
+LMS_API_BASE_URL=http://backend:8000
+LMS_API_KEY=<your-lms-api-key>
+LLM_API_KEY=<your-llm-api-key>
+LLM_API_BASE_URL=http://host.docker.internal:42005
+LLM_API_MODEL=coder-model
+```
+
+### Deploy with Docker Compose
+
+```bash
+cd ~/se-toolkit-lab-7
+
+# Stop any running bot process
+pkill -f "bot.py" 2>/dev/null
+
+# Build and start all services
+docker compose --env-file .env.docker.secret up --build -d
+
+# Check status
+docker compose --env-file .env.docker.secret ps
+
+# View bot logs
+docker compose --env-file .env.docker.secret logs bot --tail 50
+```
+
+### Verify Deployment
+
+1. **Check services running:**
+
+   ```bash
+   docker ps | grep -E "(backend|bot)"
+   ```
+
+2. **Test backend:**
+
+   ```bash
+   curl -sf http://localhost:42002/docs
+   ```
+
+3. **Test in Telegram:**
+   - Send `/start` to your bot
+   - Try: "what labs are available?"
+   - Try: "show scores for lab 4"
+
+### Troubleshooting
+
+| Issue                     | Solution                                                                 |
+| ------------------------- | ------------------------------------------------------------------------ |
+| Bot not responding        | Check logs: `docker compose logs bot`                                    |
+| LLM errors                | Restart Qwen proxy: `cd ~/qwen-code-oai-proxy && docker compose restart` |
+| Backend connection failed | Ensure `LMS_API_BASE_URL=http://backend:8000` (not localhost)            |
+| BOT_TOKEN error           | Verify token in `.env.bot.secret`                                        |
+
+### Update Deployment
+
+```bash
+cd ~/se-toolkit-lab-7
+git pull
+docker compose --env-file .env.docker.secret up --build -d
+```

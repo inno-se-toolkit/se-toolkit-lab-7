@@ -1,0 +1,17 @@
+FROM astral-sh/uv:python3.12-bookworm
+
+WORKDIR /app
+
+# Copy bot-specific files
+COPY pyproject.toml uv.lock ./
+COPY bot/ ./bot/
+COPY backend/ ./backend/
+
+# Sync dependencies
+RUN uv sync --locked --no-install-project
+
+# Set environment variables
+ENV PYTHONPATH=/app
+
+# Run the bot
+CMD ["uv", "run", "bot/bot.py"]
