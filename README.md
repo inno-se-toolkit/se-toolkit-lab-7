@@ -95,3 +95,56 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+The bot runs as a Docker container alongside the backend using `docker compose`.
+
+### Prerequisites
+
+Ensure the following environment variables are set in `.env.docker.secret`:
+
+- `BOT_TOKEN` — Telegram bot token from @BotFather
+- `LMS_API_KEY` — API key for the LMS backend
+- `LLM_API_KEY` — API key for the LLM service
+- `LLM_API_BASE_URL` — Base URL for the LLM API (e.g., `http://localhost:42005/v1`)
+
+### Deploy commands
+
+```bash
+cd ~/se-toolkit-lab-7
+
+# Stop any running bot process (if migrating from nohup)
+pkill -f "bot.py" 2>/dev/null
+
+# Build and start all services
+docker compose --env-file .env.docker.secret up --build -d
+
+# Check status
+docker compose --env-file .env.docker.secret ps
+
+# View bot logs
+docker compose --env-file .env.docker.secret logs bot --tail 50
+```
+
+### Verify deployment
+
+```bash
+# Check bot container is running
+docker compose --env-file .env.docker.secret ps bot
+
+# Check backend is healthy
+curl -sf http://localhost:42002/docs
+
+# Test bot in Telegram — send:
+# /start, /health, /labs, "what labs are available?"
+```
+
+### Troubleshooting
+
+| Symptom | Solution |
+|---------|----------|
+| Bot container restarting | Check logs: `docker compose logs bot` |
+| `/health` fails | Ensure `LMS_API_BASE_URL=http://backend:8000` (not `localhost`) |
+| LLM queries fail | `LLM_API_BASE_URL` should use `host.docker.internal` if LLM is on host |
+| Build fails at `uv sync` | Ensure `uv.lock` is copied in Dockerfile |
