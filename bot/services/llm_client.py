@@ -1,311 +1,174 @@
-"""LLM service with tool calling support."""
+"""LLM client for intent-based natural language routing.
 
-import json
+This client talks to the Qwen Code API (or any OpenAI-compatible endpoint)
+and uses tool calling to route user queries to the appropriate backend APIs.
+"""
+
 import httpx
+import json
+import sys
 from typing import Any
 
 
 class LLMClient:
-    """Client for LLM API with tool calling support.
+    """Client for LLM-powered intent routing with tool calling."""
 
-    Supports OpenAI-compatible APIs including Qwen Code.
-    """
-
-    def __init__(self, api_key: str, base_url: str, model: str) -> None:
-        self._api_key = api_key
-        self._base_url = base_url.rstrip("/")
-        self._model = model
-        self._client = httpx.AsyncClient(
-            base_url=self._base_url,
-            headers={
-                "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json",
-            },
-            timeout=60.0,
-        )
-
-    async def close(self) -> None:
-        """Close the HTTP client."""
-        await self._client.aclose()
-
-    def get_tool_schemas(self) -> list[dict[str, Any]]:
-        """Return tool schemas for LLM function calling.
-
-        These 9 tools cover all backend analytics endpoints.
-        """
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_items",
-                    "description": "Get list of all labs and tasks. Use this to find available labs or get lab IDs.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_learners",
-                    "description": "Get list of enrolled students and their groups. Use for questions about student enrollment.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_pass_rates",
-                    "description": "Get per-task average scores and attempt counts for a specific lab. Use for questions about task difficulty or pass rates.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lab": {
-                                "type": "string",
-                                "description": "Lab identifier, e.g. 'lab-01', 'lab-04'",
-                            },
-                        },
-                        "required": ["lab"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_scores",
-                    "description": "Get score distribution (4 buckets) for a lab. Use for questions about score ranges.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lab": {
-                                "type": "string",
-                                "description": "Lab identifier, e.g. 'lab-01', 'lab-04'",
-                            },
-                        },
-                        "required": ["lab"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_timeline",
-                    "description": "Get submissions timeline (submissions per day) for a lab. Use for questions about submission patterns over time.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lab": {
-                                "type": "string",
-                                "description": "Lab identifier, e.g. 'lab-01', 'lab-04'",
-                            },
-                        },
-                        "required": ["lab"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_groups",
-                    "description": "Get per-group performance scores and student counts for a lab. Use for comparing groups.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lab": {
-                                "type": "string",
-                                "description": "Lab identifier, e.g. 'lab-01', 'lab-04'",
-                            },
-                        },
-                        "required": ["lab"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_top_learners",
-                    "description": "Get top N learners by score for a lab. Use for leaderboard questions.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lab": {
-                                "type": "string",
-                                "description": "Lab identifier, e.g. 'lab-01', 'lab-04'",
-                            },
-                            "limit": {
-                                "type": "integer",
-                                "description": "Number of top learners to return (default: 5)",
-                                "default": 5,
-                            },
-                        },
-                        "required": ["lab"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_completion_rate",
-                    "description": "Get completion rate percentage for a lab. Use for questions about how many students finished.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lab": {
-                                "type": "string",
-                                "description": "Lab identifier, e.g. 'lab-01', 'lab-04'",
-                            },
-                        },
-                        "required": ["lab"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "trigger_sync",
-                    "description": "Trigger ETL sync to refresh data from autochecker. Use when data seems outdated.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                    },
-                },
-            },
-        ]
-
-    async def chat_with_tools(
-        self,
-        messages: list[dict[str, Any]],
-        tools: list[dict[str, Any]],
-        max_iterations: int = 5,
-        debug: bool = False,
-    ) -> str:
-        """Chat with LLM using tool calling loop.
+    def __init__(self, api_key: str, base_url: str, model: str):
+        """Initialize the LLM client.
 
         Args:
-            messages: Conversation history with user messages.
-            tools: List of tool schemas for function calling.
-            max_iterations: Maximum tool call iterations to prevent loops.
+            api_key: API key for the LLM service.
+            base_url: Base URL of the LLM API endpoint.
+            model: Model name to use (e.g., 'coder-model').
+        """
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self._client = httpx.Client(
+            base_url=self.base_url,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            timeout=120.0,
+        )
+
+    def _debug_log(self, message: str) -> None:
+        """Print debug message to stderr (visible in --test mode)."""
+        print(message, file=sys.stderr)
+
+    def chat_with_tools(
+        self,
+        user_message: str,
+        tools: list[dict[str, Any]],
+        system_prompt: str,
+        max_iterations: int = 5,
+    ) -> str:
+        """Send a message to the LLM with tool definitions and execute tool calls.
+
+        Args:
+            user_message: The user's natural language query.
+            tools: List of tool/function schemas for the LLM to choose from.
+            system_prompt: System prompt to guide the LLM's behavior.
+            max_iterations: Maximum number of tool-calling iterations.
 
         Returns:
-            Final response from LLM after tool execution.
+            The LLM's final response text.
         """
-        import sys
-        
-        conversation = messages.copy()
+        # Build the conversation history
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ]
 
-        for iteration in range(max_iterations):
-            # Call LLM
-            response = await self._call_llm(conversation, tools)
+        iteration = 0
+        while iteration < max_iterations:
+            iteration += 1
 
-            # Check if LLM wants to call tools
-            if not response.get("tool_calls"):
-                # No tool calls - return final answer
-                if debug:
-                    print(f"[llm] No tool calls at iteration {iteration}, returning answer", file=sys.stderr)
-                return response.get("content", "I don't have enough information to answer.")
+            # Call the LLM
+            response = self._client.post(
+                "/chat/completions",
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "tools": tools,
+                    "tool_choice": "auto",
+                },
+            )
 
-            # Execute tool calls
-            tool_results = []
-            for tool_call in response["tool_calls"]:
-                func_name = tool_call["function"]["name"]
-                func_args = json.loads(tool_call["function"]["arguments"])
+            if response.status_code == 401:
+                self._debug_log("[tool] LLM error: HTTP 401 - token may be expired")
+                return "LLM authentication failed. Please check your API key."
+            
+            if response.status_code == 500:
+                self._debug_log("[tool] LLM error: HTTP 500 - server error")
+                return "LLM server error. Please try again."
 
-                if debug:
-                    print(f"[tool] LLM called: {func_name}({func_args})", file=sys.stderr)
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                self._debug_log(f"[tool] LLM HTTP error: {e}")
+                return f"LLM request failed: {e}"
 
-                # Execute the tool
-                result = await self._execute_tool(func_name, func_args)
-                
-                if debug:
-                    result_preview = str(result)[:100]
-                    print(f"[tool] Result: {result_preview}...", file=sys.stderr)
-                
-                tool_results.append({
-                    "tool_call_id": tool_call["id"],
-                    "name": func_name,
-                    "result": result,
-                })
+            data = response.json()
 
-            # Add tool results to conversation
-            conversation.append(response)
+            # Get the assistant's message
+            choice = data["choices"][0]
+            assistant_message = choice["message"]
 
-            if debug:
-                print(f"[summary] Feeding {len(tool_results)} tool result(s) back to LLM", file=sys.stderr)
+            # Check if the LLM wants to call tools
+            tool_calls = assistant_message.get("tool_calls", [])
 
-            for tool_result in tool_results:
-                conversation.append({
+            if not tool_calls:
+                # No tool calls - the LLM is done (final response)
+                return assistant_message.get("content", "No response generated.")
+
+            # Add the assistant's message (with tool calls) to history
+            messages.append(assistant_message)
+
+            # Execute each tool call
+            for tool_call in tool_calls:
+                function_name = tool_call["function"]["name"]
+                function_args = json.loads(tool_call["function"]["arguments"])
+                tool_call_id = tool_call["id"]
+
+                self._debug_log(f"[tool] LLM called: {function_name}({function_args})")
+
+                # Execute the tool and get result
+                result = self._execute_tool(function_name, function_args)
+                result_str = json.dumps(result, default=str)
+
+                self._debug_log(f"[tool] Result: {result_str[:100]}...")
+
+                # Add tool result to conversation
+                messages.append({
                     "role": "tool",
-                    "tool_call_id": tool_result["tool_call_id"],
-                    "name": tool_result["name"],
-                    "content": json.dumps(tool_result["result"], ensure_ascii=False),
+                    "tool_call_id": tool_call_id,
+                    "content": result_str,
                 })
 
-        # If we reach max iterations, ask LLM to summarize
-        conversation.append({
-            "role": "system",
-            "content": "Please provide a final answer based on the tool results above.",
-        })
+            self._debug_log(f"[summary] Feeding {len(tool_calls)} tool result(s) back to LLM")
 
-        final_response = await self._call_llm(conversation, [])
-        return final_response.get("content", "I encountered an error processing your request.")
+        return "Maximum iterations reached. Unable to complete the request."
 
-    async def _call_llm(
-        self,
-        messages: list[dict[str, Any]],
-        tools: list[dict[str, Any]],
-    ) -> dict[str, Any]:
-        """Call LLM API and return response."""
-        system_prompt = """You are a helpful assistant for a Learning Management System.
-You MUST use tools to get data — NEVER make up answers about labs, scores, or students.
+    def _execute_tool(self, function_name: str, arguments: dict[str, Any]) -> Any:
+        """Execute a tool based on the LLM's request.
 
-CRITICAL RULES:
-1. ALWAYS call tools to get real data BEFORE answering any question about labs, students, or scores
-2. If user asks "what labs" → call get_items() FIRST
-3. If user asks about scores/pass rates for a lab → call get_pass_rates(lab="lab-XX")
-4. If user asks about students/enrollment → call get_learners()
-5. If user asks "which lab has lowest/highest" → call get_items(), then get_pass_rates() for each lab
-6. After calling tools, use their JSON results to provide an accurate answer with real numbers
+        Args:
+            function_name: Name of the function/tool to call.
+            arguments: Arguments to pass to the function.
 
-Available tools:
-- get_items: List all labs and tasks (use this FIRST for "what labs" questions)
-- get_learners: List enrolled students and their groups
-- get_pass_rates(lab): Get per-task average scores and attempt counts for a lab
-- get_scores(lab): Get score distribution (4 buckets) for a lab
-- get_timeline(lab): Submissions per day for a lab
-- get_groups(lab): Per-group performance scores and student counts
-- get_top_learners(lab, limit=5): Top N learners by score (leaderboard)
-- get_completion_rate(lab): Completion rate percentage
-- trigger_sync: Refresh data from autochecker
-"""
-
-        payload = {
-            "model": self._model,
-            "messages": [{"role": "system", "content": system_prompt}] + messages,
-            "temperature": 0.7,
-        }
-
-        if tools:
-            payload["tools"] = tools
-            payload["tool_choice"] = "auto"
-
-        response = await self._client.post("/chat/completions", json=payload)
-        response.raise_for_status()
-        data = response.json()
-
-        return data["choices"][0]["message"]
-
-    async def _execute_tool(self, name: str, arguments: dict[str, Any]) -> Any:
-        """Execute a tool by calling the backend API.
-
-        This method should be overridden or configured with actual API client.
-        For now, returns a placeholder that will be replaced by the bot.
+        Returns:
+            The result of the function call.
         """
-        # This will be replaced by actual API client in the bot
-        return {"error": f"Tool {name} not configured"}
+        # Import here to avoid circular imports
+        from services.lms_client import LMSClient
+        from config import load_config
+
+        config = load_config()
+        lms = LMSClient(config["LMS_API_BASE_URL"], config["LMS_API_KEY"])
+
+        # Map function names to actual method calls
+        if function_name == "get_items":
+            return lms.get_items()
+        elif function_name == "get_learners":
+            return lms.get_learners()
+        elif function_name == "get_scores":
+            return lms.get_scores(arguments.get("lab", ""))
+        elif function_name == "get_pass_rates":
+            return lms.get_pass_rates(arguments.get("lab", ""))
+        elif function_name == "get_timeline":
+            return lms.get_timeline(arguments.get("lab", ""))
+        elif function_name == "get_groups":
+            return lms.get_groups(arguments.get("lab", ""))
+        elif function_name == "get_top_learners":
+            return lms.get_top_learners(
+                arguments.get("lab", ""),
+                arguments.get("limit", 5),
+            )
+        elif function_name == "get_completion_rate":
+            return lms.get_completion_rate(arguments.get("lab", ""))
+        elif function_name == "trigger_sync":
+            return lms.trigger_sync()
+        else:
+            return {"error": f"Unknown function: {function_name}"}

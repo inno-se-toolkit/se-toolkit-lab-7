@@ -14,8 +14,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
-    MessageHandler,
     CallbackQueryHandler,
+    MessageHandler,
     filters,
     ContextTypes,
 )
@@ -23,13 +23,13 @@ from telegram.ext import (
 from config import load_config
 from handlers import (
     handle_start,
+    handle_start_text_only,
     handle_help,
     handle_health,
     handle_labs,
     handle_scores,
     handle_general_query,
 )
-from handlers.start import get_start_keyboard
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -40,10 +40,10 @@ logger = logging.getLogger(__name__)
 
 def parse_command(text: str) -> tuple[str, str]:
     """Parse command text into command and arguments.
-    
+
     Args:
         text: The message text (e.g., "/scores lab-04" or "what labs are available")
-        
+
     Returns:
         Tuple of (command, args)
     """
@@ -56,16 +56,38 @@ def parse_command(text: str) -> tuple[str, str]:
     return "", text
 
 
+def get_callback_response(callback_data: str) -> str:
+    """Get response text for inline keyboard button callbacks.
+
+    Args:
+        callback_data: The callback data from the button (e.g., "query_what_labs")
+
+    Returns:
+        Response text for the query.
+    """
+    query_map = {
+        "query_what_labs": "what labs are available",
+        "query_lowest_pass": "which lab has the lowest pass rate",
+        "query_top_students": "who are the top 5 students",
+        "query_groups": "how are groups doing",
+    }
+
+    query = query_map.get(callback_data, "")
+    if query:
+        return handle_general_query(query)
+    return "Unknown query."
+
+
 def run_test_mode(command_text: str) -> None:
     """Run in test mode - call handlers directly without Telegram.
-    
+
     Args:
         command_text: The command to test (e.g., "/start" or "what labs are available")
     """
     command, args = parse_command(command_text)
-    
+
     if command == "start":
-        response = handle_start()
+        response = handle_start_text_only()
     elif command == "help":
         response = handle_help()
     elif command == "health":
@@ -77,7 +99,7 @@ def run_test_mode(command_text: str) -> None:
     else:
         # General query / intent routing
         response = handle_general_query(command_text)
-    
+
     print(response)
     sys.exit(0)
 
@@ -85,10 +107,9 @@ def run_test_mode(command_text: str) -> None:
 async def handle_start_command(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Telegram handler for /start command."""
-    response = handle_start()
-    keyboard = get_start_keyboard()
-    await update.message.reply_text(response, reply_markup=keyboard)
+    """Telegram handler for /start command with inline keyboard."""
+    text, reply_markup = handle_start()
+    await update.message.reply_text(text, reply_markup=reply_markup)
 
 
 async def handle_help_command(
@@ -133,31 +154,18 @@ async def handle_message(
 async def handle_callback(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Handle inline keyboard button clicks."""
+    """Handle inline keyboard button callbacks."""
     query = update.callback_query
     await query.answer()
 
-    data = query.data
-
-    if data == "labs":
-        response = handle_labs()
-    elif data == "health":
-        response = handle_health()
-    elif data == "help":
-        response = handle_help()
-    elif data == "scores_help":
-        response = "📊 To see scores, use /scores lab-04 (replace 04 with any lab number)"
-    elif data == "top_lab":
-        response = handle_general_query("which lab has the lowest pass rate?")
-    else:
-        response = "Unknown action."
-
+    callback_data = query.data
+    response = get_callback_response(callback_data)
     await query.edit_message_text(response)
 
 
 def run_telegram_mode(config: dict) -> None:
     """Run the bot in Telegram mode.
-    
+
     Args:
         config: Configuration dictionary with BOT_TOKEN
     """
@@ -165,11 +173,11 @@ def run_telegram_mode(config: dict) -> None:
     if not bot_token:
         logger.error("BOT_TOKEN not found in configuration")
         sys.exit(1)
-    
+
     logger.info("Starting Telegram bot...")
-    
+
     application = Application.builder().token(bot_token).build()
-    
+
     # Add command handlers
     application.add_handler(CommandHandler("start", handle_start_command))
     application.add_handler(CommandHandler("help", handle_help_command))
@@ -177,12 +185,12 @@ def run_telegram_mode(config: dict) -> None:
     application.add_handler(CommandHandler("labs", handle_labs_command))
     application.add_handler(CommandHandler("scores", handle_scores_command))
 
+    # Add callback handler for inline keyboard buttons
+    application.add_handler(CallbackQueryHandler(handle_callback))
+
     # Add message handler for general queries
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Add callback query handler for inline buttons
-    application.add_handler(CallbackQueryHandler(handle_callback))
-    
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
@@ -195,12 +203,12 @@ def main() -> None:
         metavar="COMMAND",
         help="Run in test mode with the specified command (no Telegram connection)",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Load configuration
     config = load_config()
-    
+
     if args.test:
         # Test mode - no Telegram connection needed
         run_test_mode(args.test)

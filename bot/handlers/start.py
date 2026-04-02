@@ -1,43 +1,51 @@
-"""Handler for /start command."""
+"""Handler for /start command with inline keyboard buttons."""
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def get_start_keyboard() -> InlineKeyboardMarkup:
-    """Create inline keyboard for quick actions."""
-    keyboard = [
-        [
-            InlineKeyboardButton("📚 Labs", callback_data="labs"),
-            InlineKeyboardButton("📊 Scores", callback_data="scores_help"),
-        ],
-        [
-            InlineKeyboardButton("🔍 Health Check", callback_data="health"),
-            InlineKeyboardButton("❓ Help", callback_data="help"),
-        ],
-        [
-            InlineKeyboardButton("🏆 Top Lab", callback_data="top_lab"),
-        ],
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
-def handle_start() -> str:
-    """Handle /start command.
+def handle_start() -> tuple[str, InlineKeyboardMarkup]:
+    """Handle /start command with inline keyboard buttons.
 
     Returns:
-        Welcome message with bot name.
+        Tuple of (welcome message text, inline keyboard markup).
     """
-    return """👋 Welcome to the LMS Bot!
+    text = (
+        "👋 Welcome to SE Toolkit Bot!\n\n"
+        "I can help you with:\n"
+        "• Viewing lab scores and pass rates\n"
+        "• Comparing groups and students\n"
+        "• Finding top performers\n"
+        "• Checking submission timelines\n\n"
+        "Try asking me questions like:\n"
+        "• \"what labs are available?\"\n"
+        "• \"which lab has the lowest pass rate?\"\n"
+        "• \"show me top 5 students in lab-04\"\n"
+        "• \"how are groups doing in lab-03?\"\n\n"
+        "Or use /help to see all commands."
+    )
 
-I can help you check lab status, scores, and more.
+    # Create inline keyboard with common queries
+    keyboard = [
+        [
+            InlineKeyboardButton("📋 What labs?", callback_data="query_what_labs"),
+            InlineKeyboardButton("📊 Lowest pass rate", callback_data="query_lowest_pass"),
+        ],
+        [
+            InlineKeyboardButton("🏆 Top students", callback_data="query_top_students"),
+            InlineKeyboardButton("👥 Group comparison", callback_data="query_groups"),
+        ],
+    ]
 
-Use the buttons below or try commands like:
-• /labs — List all available labs
-• /scores lab-04 — Show pass rates
-• /health — Check backend status
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-Or just ask me a question like:
-• "what labs are available?"
-• "which lab has the lowest pass rate?"
-• "show me top 5 students in lab 4"
-"""
+    return text, reply_markup
+
+
+def handle_start_text_only() -> str:
+    """Handle /start command - text only version (for test mode).
+
+    Returns:
+        Welcome message text.
+    """
+    text, _ = handle_start()
+    return text

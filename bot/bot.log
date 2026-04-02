@@ -1,0 +1,12 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/root/se-toolkit-lab-7/bot/bot.py", line 24, in <module>
+    from handlers import (
+    ...<7 lines>...
+    )
+  File "/root/se-toolkit-lab-7/bot/handlers/__init__.py", line 7, in <module>
+    from .start import handle_start, handle_start_text_only
+  File "/root/se-toolkit-lab-7/bot/handlers/start.py", line 53
+    =======
+    ^^
+SyntaxError: invalid syntax
