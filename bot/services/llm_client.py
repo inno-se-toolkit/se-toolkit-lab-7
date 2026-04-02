@@ -184,6 +184,7 @@ class LLMClient:
         messages: list[dict[str, Any]],
         tools: list[dict[str, Any]],
         max_iterations: int = 5,
+        debug: bool = False,
     ) -> str:
         """Chat with LLM using tool calling loop.
 
@@ -195,6 +196,8 @@ class LLMClient:
         Returns:
             Final response from LLM after tool execution.
         """
+        import sys
+        
         conversation = messages.copy()
 
         for iteration in range(max_iterations):
@@ -204,6 +207,8 @@ class LLMClient:
             # Check if LLM wants to call tools
             if not response.get("tool_calls"):
                 # No tool calls - return final answer
+                if debug:
+                    print(f"[llm] No tool calls at iteration {iteration}, returning answer", file=sys.stderr)
                 return response.get("content", "I don't have enough information to answer.")
 
             # Execute tool calls
@@ -212,8 +217,16 @@ class LLMClient:
                 func_name = tool_call["function"]["name"]
                 func_args = json.loads(tool_call["function"]["arguments"])
 
+                if debug:
+                    print(f"[tool] LLM called: {func_name}({func_args})", file=sys.stderr)
+
                 # Execute the tool
                 result = await self._execute_tool(func_name, func_args)
+                
+                if debug:
+                    result_preview = str(result)[:100]
+                    print(f"[tool] Result: {result_preview}...", file=sys.stderr)
+                
                 tool_results.append({
                     "tool_call_id": tool_call["id"],
                     "name": func_name,
@@ -222,6 +235,9 @@ class LLMClient:
 
             # Add tool results to conversation
             conversation.append(response)
+
+            if debug:
+                print(f"[summary] Feeding {len(tool_results)} tool result(s) back to LLM", file=sys.stderr)
 
             for tool_result in tool_results:
                 conversation.append({
@@ -247,24 +263,25 @@ class LLMClient:
     ) -> dict[str, Any]:
         """Call LLM API and return response."""
         system_prompt = """You are a helpful assistant for a Learning Management System.
-You have access to backend API tools to fetch real data about labs, students, and scores.
+You MUST use tools to get data — NEVER make up answers about labs, scores, or students.
 
-When answering questions:
-1. Think step by step about what data you need
-2. Call the appropriate tools to fetch that data
-3. Use the tool results to provide an accurate, helpful answer
-4. If the user asks about multiple things, make multiple tool calls
-5. Always base your answers on actual data from tools, not assumptions
+CRITICAL RULES:
+1. ALWAYS call tools to get real data BEFORE answering any question about labs, students, or scores
+2. If user asks "what labs" → call get_items() FIRST
+3. If user asks about scores/pass rates for a lab → call get_pass_rates(lab="lab-XX")
+4. If user asks about students/enrollment → call get_learners()
+5. If user asks "which lab has lowest/highest" → call get_items(), then get_pass_rates() for each lab
+6. After calling tools, use their JSON results to provide an accurate answer with real numbers
 
 Available tools:
-- get_items: List all labs and tasks
-- get_learners: List enrolled students
-- get_pass_rates: Get task scores for a lab
-- get_scores: Get score distribution for a lab
-- get_timeline: Get submission timeline
-- get_groups: Get per-group performance
-- get_top_learners: Get top students leaderboard
-- get_completion_rate: Get completion percentage
+- get_items: List all labs and tasks (use this FIRST for "what labs" questions)
+- get_learners: List enrolled students and their groups
+- get_pass_rates(lab): Get per-task average scores and attempt counts for a lab
+- get_scores(lab): Get score distribution (4 buckets) for a lab
+- get_timeline(lab): Submissions per day for a lab
+- get_groups(lab): Per-group performance scores and student counts
+- get_top_learners(lab, limit=5): Top N learners by score (leaderboard)
+- get_completion_rate(lab): Completion rate percentage
 - trigger_sync: Refresh data from autochecker
 """
 
