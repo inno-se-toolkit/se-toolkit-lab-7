@@ -26,4 +26,6 @@ def load_config() -> dict[str, str]:
         "LMS_API_BASE_URL": os.getenv("LMS_API_BASE_URL", ""),
         "LMS_API_KEY": os.getenv("LMS_API_KEY", ""),
         "LLM_API_KEY": os.getenv("LLM_API_KEY", ""),
+        "LLM_API_BASE_URL": os.getenv("LLM_API_BASE_URL", ""),
+        "LLM_API_MODEL": os.getenv("LLM_API_MODEL", "coder-model"),
     }
