@@ -69,8 +69,12 @@ class IntentRouter:
         Returns:
             Response based on intent and tool results.
         """
+        import sys
+        
         # Check for LLM availability
         if not self.config.get("LLM_API_KEY") or not self.config.get("LLM_API_BASE_URL"):
+            if debug:
+                print("[router] LLM not configured, using fallback", file=sys.stderr)
             return self._fallback_response(query)
 
         try:
@@ -78,17 +82,21 @@ class IntentRouter:
             tools = self.llm_client.get_tool_schemas()
 
             if debug:
-                print(f"[router] Processing query: {query}", file=__import__("sys").stderr)
+                print(f"[router] Processing query: {query}", file=sys.stderr)
+                print(f"[router] LLM URL: {self.config.get('LLM_API_BASE_URL')}", file=sys.stderr)
+                print(f"[router] LLM model: {self.config.get('LLM_API_MODEL')}", file=sys.stderr)
 
-            response = await self.llm_client.chat_with_tools(messages, tools)
+            response = await self.llm_client.chat_with_tools(messages, tools, debug=debug)
 
             if debug:
-                print(f"[router] LLM response: {response[:200]}...", file=__import__("sys").stderr)
+                print(f"[router] Final response: {response[:200]}", file=sys.stderr)
 
             return response
         except Exception as e:
             if debug:
-                print(f"[router] Error: {e}", file=__import__("sys").stderr)
+                print(f"[router] Error: {e}", file=sys.stderr)
+                import traceback
+                traceback.print_exc(file=sys.stderr)
             return self._fallback_response(query)
         finally:
             await self.api_client.close()
