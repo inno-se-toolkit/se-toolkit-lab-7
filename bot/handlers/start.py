@@ -7,6 +7,7 @@ def handle_start() -> tuple[str, InlineKeyboardMarkup]:
     """Handle /start command with inline keyboard buttons.
 
     Returns:
+<<<<<<< HEAD
         Tuple of (welcome message text, inline keyboard markup).
     """
     text = (
@@ -49,3 +50,15 @@ def handle_start_text_only() -> str:
     """
     text, _ = handle_start()
     return text
+=======
+        Welcome message with bot name.
+    """
+    return """👋 Welcome to the LMS Bot!
+
+I can help you check lab status, scores, and more.
+
+Use /help to see available commands, or just ask me a question like:
+- "what labs are available?"
+- "show me scores for lab 4"
+"""
+>>>>>>> f1706addcc06a7cd1f01a1fd5a68353c4d238cee

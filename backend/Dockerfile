@@ -23,9 +23,15 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=backend/pyproject.toml,target=backend/pyproject.toml \
+<<<<<<< HEAD
     uv sync --frozen --no-install-project
+=======
+    --mount=type=bind,source=bot/pyproject.toml,target=bot/pyproject.toml \
+    uv sync --locked --no-install-project
+>>>>>>> f1706addcc06a7cd1f01a1fd5a68353c4d238cee
 
 COPY backend /app/backend
+COPY bot /app/bot
 COPY pyproject.toml uv.lock /app/
 
 RUN --mount=type=cache,target=/root/.cache/uv \
